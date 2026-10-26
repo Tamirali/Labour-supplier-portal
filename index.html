@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labour Supplier Portal - Siwan Bihar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (CDN) -->
+    <script type="module">
+        // ===== YAHAN APNA FIREBASE CONFIG DAALEIN =====
+        // Firebase Console → Project Settings → Your Apps → Config copy karke yahan paste karein
+        window.firebaseConfig = {
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+    </script>
+    
+    <style>
+        /* ===== SAME STYLES AS BEFORE - Kept all styling ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            padding: 20px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(102,126,234,0.35), transparent 45%),
+                        radial-gradient(circle at 80% 80%, rgba(118,75,162,0.35), transparent 45%),
+                        radial-gradient(circle at 50% 50%, rgba(251,191,36,0.08), transparent 60%);
+            animation: bgShift 12s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes bgShift {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.15) rotate(8deg); }
+        }
+
+        .container {
+            max-width: 680px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .hero {
+            position: relative;
+            height: 240px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            overflow: hidden;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: zoom-in;
+        }
+
+        .hero:hover .hero-img { transform: scale(1.06); }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.4) 45%, rgba(15,23,42,0.15) 100%);
+            pointer-events: none;
+        }
+
+        .hero-top {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 3;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 0 rgba(34,197,94,0.7);
+            animation: livePulse 1.8s infinite;
+        }
+
+        @keyframes livePulse {
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+
+        .owner-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e293b;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+            white-space: nowrap;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .owner-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 28px rgba(251,191,36,0.7); }
+
+        .hero-bottom {
+            position: absolute;
+            bottom: 18px;
+            left: 20px;
+            right: 20px;
+            z-index: 3;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+        }
+
+        .avatar-wrap {
+            position: relative;
+            cursor: zoom-in;
+            flex-shrink: 0;
+        }
+
+        .avatar-wrap img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.5);
+            transition: transform 0.35s;
+            display: block;
+            background: #1e293b;
+        }
+        .avatar-wrap:hover img { transform: scale(1.08) rotate(3deg); }
+
+        .avatar-wrap::after {
+            content: '🔍';
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            border: 2px solid white;
+            transition: 0.3s;
+        }
+        .avatar-wrap:hover::after { transform: scale(1.15); }
+
+        .hero-text h1 {
+            color: #fff;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+            line-height: 1.2;
+        }
+
+        .hero-text .rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .stars { color: #fbbf24; font-size: 13px; letter-spacing: 1px; }
+        .rating-text { color: #e2e8f0; font-size: 11px; font-weight: 500; }
+
+        .member-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #cbd5e1;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .counter-num { color: #22c55e; font-weight: 700; font-size: 14px; }
+
+        .hero-zoom-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.35s;
+            pointer-events: none;
+            z-index: 4;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .hero:hover .hero-zoom-hint { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        .content { padding: 24px 28px 30px; }
+
+        .employer-notice {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border-left: 5px solid #fbbf24;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .employer-notice::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(251,191,36,0.2), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .employer-notice h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fbbf24;
+        }
+
+        .employer-notice p {
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: #e2e8f0;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .location-link {
+            color: #38bdf8;
+            text-decoration: underline;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.3s;
+        }
+        .location-link:hover { color: #fbbf24; }
+
+        .employer-wa-btn {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 13px;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 6px 18px rgba(37, 211, 102, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        .employer-wa-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(37,211,102,0.7); }
+
+        .section-title {
+            font-size: 17px;
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 5px;
+            height: 22px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+
+        .worker-form-header {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .worker-form-header .icon { font-size: 24px; }
+
+        .worker-form-header div {
+            font-size: 13px;
+            color: #3730a3;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .field { margin-bottom: 14px; }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 13.5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 13px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+            transform: translateY(-1px);
+        }
+
+        input::placeholder, textarea::placeholder { color: #94a3b8; }
+        textarea { resize: vertical; min-height: 78px; }
+
+        .skill-choice-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .skill-choice {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 18px 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .skill-choice:hover {
+            border-color: #a5b4fc;
+            background: #eef2ff;
+            transform: translateY(-2px);
+        }
+
+        .skill-choice.selected {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 8px 22px rgba(16,185,129,0.45);
+            transform: translateY(-2px);
+        }
+
+        .skill-choice .sc-icon { font-size: 32px; line-height: 1; }
+        .skill-choice .sc-label { font-size: 15px; font-weight: 700; color: #334155; }
+        .skill-choice.selected .sc-label { color: white; }
+        .skill-choice .sc-sub { font-size: 10.5px; color: #94a3b8; font-weight: 500; }
+        .skill-choice.selected .sc-sub { color: rgba(255,255,255,0.85); }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border: none;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 18px;
+            font-size: 15.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+        }
+        button[type="submit"]:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px dashed #e2e8f0;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .footer-note strong { color: #64748b; }
+
+        .footer-location {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: 0.3s;
+        }
+        .footer-location:hover { color: #764ba2; text-decoration: underline; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 99;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            background: white;
+            margin: 4% auto;
+            padding: 26px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #94a3b8;
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            line-height: 1;
+            z-index: 2;
+        }
+        .close-btn:hover { color: #ef4444; transform: rotate(90deg); }
+
+        .modal-content h3 {
+            color: #1e293b;
+            margin-bottom: 18px;
+            font-size: 19px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hidden { display: none !important; }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .admin-header .title-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #10b981;
+            background: #ecfdf5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #a7f3d0;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .export-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
+
+        .table-wrap {
+            max-height: 360px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 11px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11.5px;
+            z-index: 1;
+        }
+
+        tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: top;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #f8fafc; }
+
+        td a { color: #667eea; text-decoration: none; font-weight: 600; }
+        td a:hover { text-decoration: underline; }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .skill-tag.mistri {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+
+        .skill-tag.helper {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 7px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.25s;
+            font-family: inherit;
+            line-height: 1;
+        }
+        .delete-btn:hover { transform: scale(1.12); box-shadow: 0 5px 14px rgba(239,68,68,0.5); }
+
+        .search-box {
+            width: 100%;
+            padding: 11px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            background: #f8fafc;
+        }
+        .search-box:focus { outline: none; border-color: #667eea; background: white; }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 15px;
+            color: #94a3b8;
+            font-size: 13.5px;
+        }
+        .empty-state .icon { font-size: 42px; display: block; margin-bottom: 10px; }
+
+        .admin-photo-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border-radius: 14px;
+            margin-bottom: 16px;
+            border: 2px dashed #c7d2fe;
+        }
+
+        .admin-photo-preview {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+            cursor: zoom-in;
+            flex-shrink: 0;
+            transition: 0.3s;
+            background: #e2e8f0;
+        }
+        .admin-photo-preview:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(102,126,234,0.4); }
+
+        .admin-photo-actions { flex: 1; min-width: 0; }
+        .admin-photo-actions p { font-size: 12px; color: #64748b; margin-bottom: 8px; line-height: 1.4; }
+
+        .photo-upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .photo-upload-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(102,126,234,0.45); }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 11px;
+            width: 100%;
+            border-radius: 11px;
+            margin-top: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 13.5px;
+            transition: 0.3s;
+        }
+        .logout-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(239,68,68,0.45); }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 13px;
+            border: none;
+            width: 100%;
+            border-radius: 11px;
+            margin-top: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(102,126,234,0.5); }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.94);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s;
+            cursor: zoom-out;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox.active { display: flex; }
+
+        .lightbox img {
+            max-width: 92%;
+            max-height: 85vh;
+            border-radius: 14px;
+            border: 4px solid #fbbf24;
+            box-shadow: 0 0 80px rgba(251, 191, 36, 0.5);
+            animation: zoomIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            object-fit: contain;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.4); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            color: white;
+            font-size: 42px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            line-height: 1;
+            z-index: 2;
+        }
+        .lightbox-close:hover { color: #ef4444; transform: rotate(90deg); }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 13.5px;
+            background: rgba(0,0,0,0.65);
+            padding: 9px 22px;
+            border-radius: 24px;
+            white-space: nowrap;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: #10b981;
+            color: white;
+            padding: 14px 26px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1001;
+            font-size: 13.5px;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .confirm-overlay.active { display: flex; }
+
+        .confirm-box {
+            background: white;
+            padding: 30px 26px;
+            border-radius: 20px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            animation: zoomIn 0.35s ease-out;
+        }
+
+        .confirm-box .warn-icon { font-size: 52px; margin-bottom: 14px; }
+        .confirm-box h4 { color: #1e293b; margin-bottom: 8px; font-size: 18px; font-weight: 700; }
+        .confirm-box p { color: #64748b; font-size: 13.5px; margin-bottom: 22px; line-height: 1.55; }
+        .confirm-box .member-name { color: #ef4444; font-weight: 700; }
+
+        .confirm-actions { display: flex; gap: 10px; }
+
+        .confirm-actions button {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13.5px;
+            transition: 0.3s;
+        }
+
+        .btn-cancel { background: #e2e8f0; color: #334155; }
+        .btn-cancel:hover { background: #cbd5e1; }
+
+        .btn-delete-confirm {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .btn-delete-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(239,68,68,0.5); }
+
+        @media (max-width: 520px) {
+            body { padding: 12px 10px; }
+            .hero { height: 210px; }
+            .content { padding: 20px 18px 26px; }
+            .hero-text h1 { font-size: 16px; }
+            .avatar-wrap img { width: 60px; height: 60px; }
+            .hero-bottom { gap: 11px; bottom: 14px; left: 15px; right: 15px; }
+            .hero-top { top: 12px; left: 12px; right: 12px; }
+            .live-badge { padding: 6px 11px; font-size: 11px; }
+            .owner-btn { padding: 8px 12px; font-size: 11px; }
+            .modal-content { padding: 22px 18px; }
+            .section-title { font-size: 15.5px; }
+            thead th, tbody td { padding: 8px 5px; font-size: 11px; }
+            .admin-photo-section { flex-direction: column; text-align: center; }
+            .admin-photo-actions { width: 100%; }
+            .skill-choice .sc-icon { font-size: 26px; }
+            .skill-choice .sc-label { font-size: 14px; }
+            .employer-notice h3 { font-size: 14.5px; }
+            .employer-notice p { font-size: 12.5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HERO -->
+    <div class="hero">
+        <img id="heroImg" class="hero-img" 
+             src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=400&fit=crop" 
+             alt="Labour Workers" 
+             onclick="window.openLightbox(window.getHeroPhoto(), 'Hero Photo')">
+        <div class="hero-overlay"></div>
+        <div class="hero-zoom-hint">🔍 Click to Zoom</div>
+
+        <div class="hero-top">
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                <span>LIVE</span>
+            </div>
+            <button class="owner-btn" onclick="window.openLoginModal()">🔒 Owner</button>
+        </div>
+
+        <div class="hero-bottom">
+            <div class="avatar-wrap" onclick="window.openLightbox(window.getHeroPhoto(), 'Admin Photo')">
+                <img id="bannerPhoto" src="https://images.unsplash.com/photo-1541888946425-d0fbb18f843d?w=100&h=100&fit=crop" alt="Admin">
+            </div>
+            <div class="hero-text">
+                <h1>Labour Supplier Portal</h1>
+                <div class="rating">
+                    <span class="stars">⭐⭐⭐⭐⭐</span>
+                    <span class="rating-text">5.0 Rating</span>
+                </div>
+                <div class="member-count">
+                    <span>👥</span>
+                    <span>Registered Workers:</span>
+                    <span id="liveCounter" class="counter-num">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+        
+        <!-- EMPLOYER NOTICE -->
+        <div class="employer-notice">
+            <h3>🏗️ Kya aapko Workers chahiye?</h3>
+            <p>Agar aapko kaam ke liye <strong>Mistri ya Helper</strong> chahiye, toh form bhare bina seedha <strong>Owner ke WhatsApp</strong> par sampark karein. Hum aapko turant worker provide karenge! <br>
+            <span style="font-size:12px; color:#94a3b8;">📍 Location: <a href="https://maps.google.com/?q=26.179081,84.398717" target="_blank" class="location-link">Hazi Manzil, Siwan (Map par dekhein)</a></span></p>
+            
+            <a href="https://wa.me/918797221991?text=Namaste%2C%20mujhe%20Siwan%20Bihar%20mein%20kaam%20ke%20liye%20worker%20chahiye.%20Kripya%20sampark%20karein." class="employer-wa-btn" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Owner WhatsApp: 8797221991
+            </a>
+        </div>
+
+        <!-- WORKER FORM -->
+        <div class="section-title">Worker Registration Form</div>
+        
+        <div class="worker-form-header">
+            <span class="icon">👷</span>
+            <div>Agar aap <strong>Worker (Mistri / Helper)</strong> hain aur kaam dhundh rahe hain, toh yeh form bharein. Owner aapse sampark karenge.</div>
+        </div>
+
+        <form id="workerForm" onsubmit="window.saveData(event)">
+            <div class="field">
+                <label for="name">👤 Aapka Naam</label>
+                <input type="text" id="name" required placeholder="Apna pura naam likhein">
+            </div>
+
+            <div class="field">
+                <label for="phone">📱 WhatsApp / Mobile Number</label>
+                <input type="tel" id="phone" required pattern="[0-9]{10}" maxlength="10" placeholder="10 digit mobile number">
+            </div>
+
+            <div class="field">
+                <label>🛠️ Aap kya karte hain? (Aapka Skill / Hunar)</label>
+                <div class="skill-choice-row">
+                    <button type="button" class="skill-choice" data-skill="Mistri" onclick="window.selectSkill(this)">
+                        <span class="sc-icon">🧱</span>
+                        <span class="sc-label">Mistri</span>
+                        <span class="sc-sub">Rajmistri / Construction</span>
+                    </button>
+                    <button type="button" class="skill-choice" data-skill="Helper" onclick="window.selectSkill(this)">
+                        <span class="sc-icon">💪</span>
+                        <span class="sc-label">Helper</span>
+                        <span class="sc-sub">Kaam mein madad</span>
+                    </button>
+                </div>
+                <input type="hidden" id="skill" value="">
+            </div>
+
+            <div class="field">
+                <label for="details">📝 Apne baare mein / Kaam ki Jankari</label>
+                <textarea id="details" rows="3" placeholder="Aapka experience kitna hai? Kahan kaam kar sakte hain? Yahan likhein..."></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn">✅ Apni Jankari Save Karein</button>
+        </form>
+
+        <div class="footer-note">
+            <a href="https://maps.google.com/?q=26.179081,84.398717" target="_blank" class="footer-location">
+                📍 Hazi Manzil, Siwan, Bihar (Location Dekhein)
+            </a><br>
+            <strong>📞 Owner: 8797221991</strong><br>
+            <span style="font-size:11px;">© Labour Supplier Portal</span>
+        </div>
+    </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="window.closeLoginModal()">&times;</span>
+        <h3>🔒 Owner Panel Login</h3>
+        <div id="loginBox">
+            <div class="field">
+                <label for="adminPass">Security Password Dalein:</label>
+                <input type="password" id="adminPass" placeholder="Password daalein" onkeypress="if(event.key==='Enter') window.checkPassword()">
+            </div>
+            <button type="button" class="login-btn" onclick="window.checkPassword()">Login Karein</button>
+        </div>
+
+        <div id="dataDashboard" class="hidden">
+            <div class="admin-photo-section">
+                <img id="adminPhotoPreview" class="admin-photo-preview" 
+                     src="https://images.unsplash.com/photo-1541888946425-d0fbb18f843d?w=100&h=100&fit=crop" 
+                     alt="Admin Photo" 
+                     onclick="window.openLightbox(window.getHeroPhoto(), 'Admin Photo')">
+                <div class="admin-photo-actions">
+                    <p>📷 Apni profile photo upload karein</p>
+                    <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="window.handlePhotoUpload(event)">
+                    <button type="button" class="photo-upload-btn" onclick="document.getElementById('photoInput').click()">Photo Upload Karein</button>
+                </div>
+            </div>
+
+            <div class="admin-header">
+                <div class="title-badge">☁️ Firebase Cloud</div>
+                <button class="export-btn" onclick="window.exportCSV()">📥 CSV Export</button>
+            </div>
+
+            <p style="color: #10b981; font-weight: 700; font-size: 13.5px; margin-bottom: 10px;">✔ Registered Workers List:</p>
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Naam, number ya skill se search karein..." oninput="window.loadTableData()">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Naam</th>
+                            <th>Number</th>
+                            <th>Skill</th>
+                            <th>Details</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5"><div class="empty-state"><div class="loading-spinner" style="margin: 0 auto 10px;"></div>Data load ho raha hai...</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="logout-btn" onclick="window.logoutAdmin()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox" onclick="window.closeLightbox()">
+    <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+    <img id="lightboxImg" src="" alt="Zoomed Photo" onclick="event.stopPropagation()">
+    <div class="lightbox-caption" id="lightboxCaption">Photo</div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div id="confirmDialog" class="confirm-overlay">
+    <div class="confirm-box">
+        <div class="warn-icon">⚠️</div>
+        <h4>Delete Confirm Karein?</h4>
+        <p>Kya aap <span class="member-name" id="deleteMemberName"></span> ki entry delete karna chahte hain? Yeh action undo nahi ho sakta.</p>
+        <div class="confirm-actions">
+            <button class="btn-cancel" onclick="window.cancelDelete()">Cancel</button>
+            <button class="btn-delete-confirm" onclick="window.confirmDelete()">🗑️ Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">✅ Jankari save ho gayi!</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- ===== FIREBASE SCRIPT ===== -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ===== FIREBASE INIT =====
+    let db = null;
+    let firebaseReady = false;
+
+    function initFirebase() {
+        const config = window.firebaseConfig;
+        if (!config || !config.apiKey || config.apiKey === "YOUR_API_KEY_HERE") {
+            console.warn("⚠️ Firebase config nahi mila! Demo mode mein chal raha hai.");
+            return false;
+        }
+        try {
+            const app = initializeApp(config);
+            db = getFirestore(app);
+            firebaseReady = true;
+            console.log("✅ Firebase connected!");
+            return true;
+        } catch (err) {
+            console.error("Firebase init error:", err);
+            return false;
+        }
+    }
+
+    // ===== GLOBAL VARIABLES =====
+    let allRecords = [];
+    let pendingDeleteIndex = null;
+    let pendingDeleteDocId = null;
+
+    // ===== INIT ON LOAD =====
+    window.addEventListener('load', async () => {
+        initFirebase();
+        
+        // Load saved photos
+        let savedPhoto = localStorage.getItem('adminPhoto');
+        if (savedPhoto) {
+            document.getElementById('bannerPhoto').src = savedPhoto;
+            document.getElementById('adminPhotoPreview').src = savedPhoto;
+        }
+        let savedHero = localStorage.getItem('heroPhoto');
+        if (savedHero) {
+            document.getElementById('heroImg').src = savedHero;
+        }
+        
+        // Load worker count
+        await updateCounter();
+    });
+
+    // ===== UPDATE COUNTER (from Firebase) =====
+    async function updateCounter() {
+        let count = 900;
+        if (firebaseReady) {
+            try {
+                const snap = await getDocs(collection(db, 'workers'));
+                count = 900 + snap.size;
+            } catch (err) {
+                console.error("Counter error:", err);
+            }
+        } else {
+            // Fallback to localStorage
+            let local = JSON.parse(localStorage.getItem('labourRecords')) || [];
+            count = 900 + local.length;
+        }
+        document.getElementById('liveCounter').innerText = count;
+    }
+
+    // ===== HELPERS =====
+    window.getHeroPhoto = () => document.getElementById('heroImg').src;
+    
+    window.showToast = (msg, color) => {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.background = color || '#10b981';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    };
+
+    window.showLoading = (show) => {
+        document.getElementById('loadingOverlay').classList.toggle('active', show);
+    };
+
+    // ===== SKILL SELECT =====
+    window.selectSkill = (btn) => {
+        document.querySelectorAll('.skill-choice').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('skill').value = btn.dataset.skill;
+    };
+
+    // ===== SAVE DATA (Firebase) =====
+    window.saveData = async (event) => {
+        event.preventDefault();
+        let name = document.getElementById('name').value.trim();
+        let phone = document.getElementById('phone').value.trim();
+        let skill = document.getElementById('skill').value;
+        let details = document.getElementById('details').value.trim();
+
+        if (phone.length !== 10) {
+            window.showToast('⚠️ Kripya 10 digit ka sahi number dalein!', '#ef4444');
+            return;
+        }
+        if (!skill) {
+            window.showToast('⚠️ Kripya batayein aap kya karte hain — Mistri ya Helper!', '#ef4444');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ Save ho raha hai...';
+        window.showLoading(true);
+
+        const newEntry = {
+            name, phone, skill, details,
+            date: new Date().toLocaleString(),
+            createdAt: new Date().toISOString()
+        };
+
+        try {
+            if (firebaseReady) {
+                // Save to Firebase
+                await addDoc(collection(db, 'workers'), {
+                    ...newEntry,
+                    serverCreatedAt: serverTimestamp()
+                });
+            } else {
+                // Fallback to localStorage
+                let local = JSON.parse(localStorage.getItem('labourRecords')) || [];
+                local.push(newEntry);
+                localStorage.setItem('labourRecords', JSON.stringify(local));
+            }
+
+            await updateCounter();
+            window.showToast('✅ Aapki jankari save ho gayi! Owner jald sampark karenge.');
+            document.getElementById('workerForm').reset();
+            document.querySelectorAll('.skill-choice').forEach(b => b.classList.remove('selected'));
+            document.getElementById('skill').value = '';
+        } catch (err) {
+            console.error("Save error:", err);
+            window.showToast('❌ Save nahi hua. Internet check karein!', '#ef4444');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = '✅ Apni Jankari Save Karein';
+            window.showLoading(false);
+        }
+    };
+
+    // ===== LIGHTBOX =====
+    window.openLightbox = (src, caption) => {
+        if (!src) return;
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightboxCaption').innerText = caption || 'Photo';
+        document.getElementById('lightbox').classList.add('active');
+    };
+    window.closeLightbox = () => {
+        document.getElementById('lightbox').classList.remove('active');
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            window.closeLightbox();
+            window.cancelDelete();
+        }
+    });
+
+    // ===== ADMIN PHOTO UPLOAD =====
+    window.handlePhotoUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            window.showToast('⚠️ Kripya sirf image file chunein!', '#ef4444');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            window.showToast('⚠️ Photo 2MB se choti honi chahiye!', '#ef4444');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            document.getElementById('bannerPhoto').src = dataUrl;
+            document.getElementById('adminPhotoPreview').src = dataUrl;
+            document.getElementById('heroImg').src = dataUrl;
+            try {
+                localStorage.setItem('adminPhoto', dataUrl);
+                localStorage.setItem('heroPhoto', dataUrl);
+                window.showToast('✅ Admin photo upload ho gayi!');
+            } catch (err) {
+                window.showToast('⚠️ Photo save nahi ho payi (storage full)', '#ef4444');
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // ===== LOGIN =====
+    window.openLoginModal = () => { document.getElementById('loginModal').style.display = 'block'; };
+    window.closeLoginModal = () => {
+        document.getElementById('loginModal').style.display = 'none';
+        window.logoutAdmin();
+    };
+
+    window.checkPassword = () => {
+        let pass = document.getElementById('adminPass').value;
+        if (pass === "78699") {
+            document.getElementById('loginBox').classList.add('hidden');
+            document.getElementById('dataDashboard').classList.remove('hidden');
+            window.loadTableData();
+        } else {
+            window.showToast('❌ Galat Password!', '#ef4444');
+        }
+    };
+
+    // ===== LOAD TABLE DATA (Firebase) =====
+    window.loadTableData = async () => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="loading-spinner" style="margin: 0 auto 10px;"></div>Data load ho raha hai...</div></td></tr>`;
+
+        try {
+            if (firebaseReady) {
+                // Load from Firebase
+                const q = query(collection(db, 'workers'), orderBy('serverCreatedAt', 'desc'));
+                const snap = await getDocs(q);
+                allRecords = [];
+                snap.forEach(docSnap => {
+                    allRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+            } else {
+                // Fallback to localStorage
+                allRecords = (JSON.parse(localStorage.getItem('labourRecords')) || [])
+                    .map((r, i) => ({ id: 'local_' + i, ...r }));
+            }
+            renderTable();
+        } catch (err) {
+            console.error("Load error:", err);
+            // Fallback if firebase fails
+            allRecords = (JSON.parse(localStorage.getItem('labourRecords')) || [])
+                .map((r, i) => ({ id: 'local_' + i, ...r }));
+            renderTable();
+            window.showToast('⚠️ Firebase se load nahi hua, local data dikha rahe hain', '#f59e0b');
+        }
+    };
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const search = (document.getElementById('searchBox')?.value || '').toLowerCase();
+        
+        let filtered = allRecords.filter(r =>
+            (r.name || '').toLowerCase().includes(search) ||
+            (r.phone || '').includes(search) ||
+            (r.skill || '').toLowerCase().includes(search)
+        );
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="icon">📭</span>${allRecords.length === 0 ? 'Abhi koi worker register nahi hua.' : 'Koi matching result nahi mila.'}</div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        filtered.forEach(item => {
+            let skillClass = 'skill-tag';
+            if (item.skill === 'Mistri') skillClass += ' mistri';
+            else if (item.skill === 'Helper') skillClass += ' helper';
+            
+            let skillHtml = item.skill 
+                ? `<span class="${skillClass}">${escapeHtml(item.skill)}</span>`
+                : '<span style="color:#94a3b8;">-</span>';
+
+            tbody.innerHTML += `<tr>
+                <td>${escapeHtml(item.name || '')}</td>
+                <td><a href="tel:${item.phone}">${escapeHtml(item.phone || '')}</a></td>
+                <td>${skillHtml}</td>
+                <td>${escapeHtml(item.details || '-')}</td>
+                <td><button class="delete-btn" onclick="window.askDelete('${item.id}', '${escapeJs(item.name || '')}')" title="Delete">🗑️</button></td>
+            </tr>`;
+        });
+    }
+
+    // ===== CSV EXPORT =====
+    window.exportCSV = () => {
+        if (allRecords.length === 0) {
+            window.showToast('⚠️ Koi data nahi hai export karne ke liye.', '#ef4444');
+            return;
+        }
+        let csv = 'Naam,Phone,Skill,Details,Date\n';
+        allRecords.forEach(r => {
+            let details = (r.details || '').replace(/"/g, '""').replace(/\n/g, ' ');
+            csv += `"${r.name || ''}","${r.phone || ''}","${r.skill || ''}","${details}","${r.date || ''}"\n`;
+        });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'workers_' + new Date().toISOString().slice(0,10) + '.csv';
+        link.click();
+        window.showToast('✅ CSV file download ho gayi!');
+    };
+
+    // ===== DELETE =====
+    window.askDelete = (docId, name) => {
+        pendingDeleteDocId = docId;
+        document.getElementById('deleteMemberName').innerText = '"' + name + '"';
+        document.getElementById('confirmDialog').classList.add('active');
+    };
+
+    window.cancelDelete = () => {
+        pendingDeleteDocId = null;
+        document.getElementById('confirmDialog').classList.remove('active');
+    };
+
+    window.confirmDelete = async () => {
+        if (!pendingDeleteDocId) return;
+
+        window.showLoading(true);
+        try {
+            if (firebaseReady && !pendingDeleteDocId.startsWith('local_')) {
+                // Delete from Firebase
+                await deleteDoc(doc(db, 'workers', pendingDeleteDocId));
+            } else {
+                // Delete from localStorage
+                const idx = parseInt(pendingDeleteDocId.replace('local_', ''));
+                let local = JSON.parse(localStorage.getItem('labourRecords')) || [];
+                if (idx >= 0 && idx < local.length) {
+                    local.splice(idx, 1);
+                    localStorage.setItem('labourRecords', JSON.stringify(local));
+                }
+            }
+            window.cancelDelete();
+            await window.loadTableData();
+            await updateCounter();
+            window.showToast('🗑️ Entry delete ho gayi!', '#f59e0b');
+        } catch (err) {
+            console.error("Delete error:", err);
+            window.showToast('❌ Delete nahi hua. Try again!', '#ef4444');
+        } finally {
+            window.showLoading(false);
+        }
+    };
+
+    // ===== ESCAPE HELPERS =====
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function escapeJs(str) {
+        return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    window.logoutAdmin = () => {
+        document.getElementById('adminPass').value = "";
+        document.getElementById('dataDashboard').classList.add('hidden');
+        document.getElementById('loginBox').classList.remove('hidden');
+        if (document.getElementById('searchBox')) document.getElementById('searchBox').value = "";
+    };
+
+    window.onclick = (event) => {
+        let modal = document.getElementById('loginModal');
+        if (event.target === modal) window.closeLoginModal();
+    };
+</script>
+
+</body>
+</html>
