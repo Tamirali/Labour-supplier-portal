@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR & Barcode Generator Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #00796b;
+            --primary-dark: #004d40;
+            --bg-start: #00796b;
+            --bg-end: #004d40;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #ddd;
+            --input-bg: #ffffff;
+            --output-bg: #ffffff; /* Hamesha white background */
+        }
+
+        [data-theme="dark"] {
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --border-color: #475569;
+            --input-bg: #0f172a;
+            --output-bg: #ffffff; /* Dark mode mein bhi white hi rahega */
+            --bg-start: #0f172a;
+            --bg-end: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            transition: background 0.4s;
+        }
+
+        .container {
+            background: var(--card-bg);
+            color: var(--text-color);
+            width: 100%;
+            max-width: 520px;
+            padding: 28px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: background 0.4s, color 0.4s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.4rem;
+        }
+
+        .theme-toggle {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .theme-toggle:hover { transform: rotate(20deg); background: var(--primary-dark); }
+
+        .input-group { margin-bottom: 15px; text-align: left; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-color);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.15);
+        }
+
+        .copy-btn {
+            padding: 0 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .copy-btn:hover { background: var(--primary-dark); }
+
+        .options-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .options-row .input-group { flex: 1; margin-bottom: 0; }
+
+        .color-picker {
+            width: 100%;
+            height: 44px;
+            padding: 3px;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-primary, .btn-secondary {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-secondary:hover { background: var(--primary); color: white; }
+
+        .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* --- UPDATED OUTPUT SECTION --- */
+        .output-section {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border-color); /* Dashed ki jagah solid clean border */
+            border-radius: 12px;
+            padding: 20px;
+            background: #ffffff; /* Hamesha white */
+            min-height: 120px;
+            transition: 0.3s;
+            overflow: hidden; /* Extra kuch bahar na nikle */
+        }
+
+        .placeholder-text {
+            color: #666; /* White background par dark grey text */
+            opacity: 0.7;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* QR aur Barcode ke liye clean frame */
+        #qrcode, #barcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px; /* Thoda sa gap taaki scan mein dikkat na ho */
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Halka sa shadow clean look ke liye */
+        }
+
+        #qrcode canvas, #qrcode img, #barcode canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .card-details {
+            margin-top: 10px;
+            width: 100%;
+            background: rgba(0, 121, 107, 0.08);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0, 121, 107, 0.2);
+        }
+
+        .item-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #323232;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.4s;
+            z-index: 9999;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { background: #2e7d32; }
+        .toast.error { background: #c62828; }
+
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            h2 { font-size: 1.15rem; }
+            .options-row { flex-direction: column; }
+            .btn-row { flex-direction: column; }
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            .output-section, .output-section * { visibility: visible; }
+            .output-section { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2><i class="fa-solid fa-qrcode"></i> Code Generator</h2>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Theme badlein">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </button>
+        </div>
+
+        <div class="input-group">
+            <label for="code-value">Code Data (URL / Number / Text):</label>
+            <div class="input-wrapper">
+                <input type="text" id="code-value" placeholder="Jaise: 12345678" oninput="autoGenerate()">
+                <button class="copy-btn" onclick="copyData()" title="Copy karein">
+                    <i class="fa-solid fa-copy"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="custom-desc">Description:</label>
+            <input type="text" id="custom-desc" placeholder="Jaise: Alu Rs/100" oninput="autoGenerate()">
+        </div>
+
+        <div class="options-row">
+            <div class="input-group">
+                <label for="code-type">Type:</label>
+                <select id="code-type" onchange="autoGenerate()">
+                    <option value="qrcode">QR Code</option>
+                    <option value="barcode">Barcode (CODE128)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="code-size">Size: <span id="size-label">200</span>px</label>
+                <input type="range" id="code-size" min="100" max="300" value="200" step="20" oninput="updateSizeLabel(); autoGenerate()">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="code-color">Color:</label>
+            <input type="color" id="code-color" class="color-picker" value="#000000" onchange="autoGenerate()">
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-primary" onclick="generateCode()">
+                <i class="fa-solid fa-bolt"></i> Generate
+            </button>
+            <button class="btn-secondary" id="download-btn" onclick="downloadCode()" disabled>
+                <i class="fa-solid fa-download"></i> Download
+            </button>
+        </div>
+
+        <div class="output-section" id="output-section">
+            <div id="qrcode" class="hidden"></div>
+            <canvas id="barcode" class="hidden"></canvas>
+            <p class="placeholder-text" id="placeholder-text">
+                <i class="fa-solid fa-arrow-up"></i><br>Data bharein aur Generate dabayein
+            </p>
+            <div id="details-box" class="card-details hidden">
+                <div class="item-title" id="display-title"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ---------- Utilities ----------
+        let toastTimer;
+        function showToast(msg, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.className = 'toast ' + type, 2500);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('theme-icon').className = isDark
+                ? 'fa-solid fa-moon'
+                : 'fa-solid fa-sun';
+            autoGenerate();
+        }
+
+        function updateSizeLabel() {
+            document.getElementById('size-label').textContent = document.getElementById('code-size').value;
+        }
+
+        function copyData() {
+            const val = document.getElementById('code-value').value.trim();
+            if (!val) return showToast('Pehle data bharein!', 'error');
+            navigator.clipboard.writeText(val)
+                .then(() => showToast('Copied!', 'success'))
+                .catch(() => showToast('Copy fail hua', 'error'));
+        }
+
+        // ---------- Main Logic ----------
+        let lastGenerated = null;
+
+        function validateBarcode(value) {
+            return /^[\x20-\x7E]+$/.test(value);
+        }
+
+        function generateCode(silent = false) {
+            const codeValue = document.getElementById("code-value").value.trim();
+            const customDesc = document.getElementById("custom-desc").value.trim();
+            const codeType = document.getElementById("code-type").value;
+            const size = parseInt(document.getElementById("code-size").value, 10);
+            const color = document.getElementById("code-color").value;
+
+            const qrContainer = document.getElementById("qrcode");
+            const barcodeCanvas = document.getElementById("barcode");
+            const detailsBox = document.getElementById("details-box");
+            const displayTitle = document.getElementById("display-title");
+            const placeholder = document.getElementById("placeholder-text");
+            const downloadBtn = document.getElementById("download-btn");
+
+            if (!codeValue) {
+                if (!silent) showToast("Code Data bharein!", "error");
+                return;
+            }
+
+            qrContainer.innerHTML = "";
+            qrContainer.classList.add("hidden");
+            barcodeCanvas.classList.add("hidden");
+            detailsBox.classList.add("hidden");
+            downloadBtn.disabled = true;
+            lastGenerated = null;
+
+            if (codeType === "qrcode") {
+                placeholder.classList.add("hidden");
+                qrContainer.classList.remove("hidden");
+
+                const qr = new QRCode(qrContainer, {
+                    text: codeValue,
+                    width: size,
+                    height: size,
+                    colorDark: color,
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                lastGenerated = { type: 'qrcode', size };
+
+            } else if (codeType === "barcode") {
+                if (!validateBarcode(codeValue)) {
+                    placeholder.classList.remove("hidden");
+                    if (!silent) showToast("Barcode ke liye sirf English letters/numbers dalein.", "error");
+                    return;
+                }
+
+                placeholder.classList.add("hidden");
+                barcodeCanvas.classList.remove("hidden");
+
+                try {
+                    JsBarcode("#barcode", codeValue, {
+                        format: "CODE128",
+                        lineColor: color,
+                        background: "#ffffff",
+                        width: Math.max(1, Math.round(size / 80)),
+                        height: Math.round(size / 3),
+                        displayValue: true,
+                        fontSize: 14,
+                        margin: 8
+                    });
+                    lastGenerated = { type: 'barcode', size };
+                } catch (err) {
+                    placeholder.classList.remove("hidden");
+                    if (!silent) showToast("Barcode generate nahi hua. Data check karein.", "error");
+                    return;
+                }
+            }
+
+            if (customDesc) {
+                displayTitle.innerText = customDesc;
+                detailsBox.classList.remove("hidden");
+            }
+            downloadBtn.disabled = false;
+        }
+
+        let autoTimer;
+        function autoGenerate() {
+            clearTimeout(autoTimer);
+            autoTimer = setTimeout(() => {
+                if (document.getElementById('code-value').value.trim()) {
+                    generateCode(true);
+                }
+            }, 400);
+        }
+
+        function downloadCode() {
+            if (!lastGenerated) return;
+            const codeType = document.getElementById("code-type").value;
+
+            if (codeType === "qrcode") {
+                const canvas = document.querySelector('#qrcode canvas');
+                const img = document.querySelector('#qrcode img');
+                const src = canvas ? canvas.toDataURL("image/png") : (img ? img.src : null);
+                if (!src) return showToast("Download fail hua", "error");
+                triggerDownload(src, "qrcode.png");
+            } else {
+                const canvas = document.getElementById("barcode");
+                triggerDownload(canvas.toDataURL("image/png"), "barcode.png");
+            }
+            showToast("Download ho gaya!", "success");
+        }
+
+        function triggerDownload(dataUrl, filename) {
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = filename;
+            a.click();
+        }
+    </script>
+
+</body>
+</html>
