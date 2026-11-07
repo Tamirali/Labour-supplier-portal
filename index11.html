@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart POS - Bill Scanner (QR + Barcode)</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #4f46e5, #7c3aed); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+
+    .container { background: #ffffff; width: 100%; max-width: 480px; padding: 22px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    h2 { color: #333; margin-bottom: 15px; font-weight: 600; font-size: 20px; text-align: center; }
+
+    /* TABS */
+    .tabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 18px; gap: 4px; }
+    .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 6px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #4f46e5; color: white; box-shadow: 0 2px 6px rgba(79,70,229,0.35); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .header-status { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+    .btn-connect { background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+    .btn-connect.online { background: #16a34a; }
+
+    .input-group { margin-bottom: 12px; text-align: left; }
+    label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 500; }
+    input, select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; transition: 0.3s; background: #fafafa; }
+    input:focus, select:focus { border-color: #4f46e5; background: #fff; }
+
+    .btn { border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+    .btn-primary { background-color: #4f46e5; color: white; }
+    .btn-primary:hover { background-color: #4338ca; }
+    .btn-print { background-color: #16a34a; color: white; }
+    .btn-print:hover { background-color: #15803d; }
+    .btn-secondary { background-color: #6b7280; color: white; }
+    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-danger { background-color: #dc2626; color: white; }
+    .btn-danger:hover { background-color: #b91c1c; }
+
+    .hidden { display: none !important; }
+
+    /* ===== SCANNER STYLES ===== */
+    .scanner-box {
+        width: 100%;
+        max-width: 340px;
+        margin: 0 auto 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #4f46e5;
+        background: #000;
+        min-height: 200px;
+        position: relative;
+    }
+    #qr-reader, #barcode-reader { width: 100% !important; }
+    #qr-reader video, #barcode-reader video { border-radius: 10px; }
+
+    .scan-result {
+        background: #f0fdf4;
+        border: 2px solid #16a34a;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #15803d;
+        text-align: center;
+        margin: 10px 0;
+        word-break: break-all;
+    }
+    .scan-result.error {
+        background: #fef2f2;
+        border-color: #dc2626;
+        color: #b91c1c;
+    }
+
+    .btn-scan { background: #0ea5e9; color: white; }
+    .btn-scan:hover { background: #0284c7; }
+    .btn-stop { background: #f59e0b; color: white; }
+    .btn-stop:hover { background: #d97706; }
+    .btn-gallery { background: #7c3aed; color: white; }
+    .btn-gallery:hover { background: #6d28d9; }
+
+    .scan-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .scan-actions .btn { margin-top: 0; }
+
+    /* BILL PANEL */
+    .bill-panel {
+        margin-top: 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .bill-panel-header {
+        background: #4f46e5;
+        color: white;
+        padding: 10px 14px;
+        font-weight: 600;
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .bill-panel-header .badge {
+        background: white;
+        color: #4f46e5;
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 12px;
+    }
+    .bill-items { max-height: 260px; overflow-y: auto; }
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+        gap: 8px;
+    }
+    .bill-item:last-child { border-bottom: none; }
+    .bill-item .item-info { flex: 1; }
+    .bill-item .item-name { font-weight: 600; color: #1f2937; }
+    .bill-item .item-code { font-size: 11px; color: #94a3b8; }
+    .bill-item .item-price { font-weight: 700; color: #4f46e5; white-space: nowrap; }
+    .bill-item .item-qty { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .qty-btn {
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        color: #475569;
+        line-height: 1;
+    }
+    .qty-btn:hover { background: #e2e8f0; }
+    .qty-num { min-width: 20px; text-align: center; font-weight: 600; }
+    .item-remove {
+        border: none;
+        background: #fee2e2;
+        color: #dc2626;
+        width: 26px; height: 26px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .item-remove:hover { background: #fecaca; }
+
+    .bill-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: #eef2ff;
+        font-weight: 700;
+        font-size: 16px;
+        color: #312e81;
+    }
+    .bill-empty { padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+
+    .bill-actions { display: flex; gap: 8px; padding: 12px; background: #f8fafc; }
+    .bill-actions .btn { margin-top: 0; padding: 10px; font-size: 14px; }
+
+    /* Manual code entry */
+    .manual-entry { display: flex; gap: 8px; margin-top: 10px; }
+    .manual-entry input { flex: 1; }
+    .manual-entry button { flex: 0 0 auto; padding: 0 16px; margin-top: 0; }
+
+    /* Product add form (inside bill section for unknown codes) */
+    .product-form {
+        background: #fffbeb;
+        border: 2px solid #f59e0b;
+        border-radius: 10px;
+        padding: 12px;
+        margin: 12px 0;
+    }
+    .product-form h4 { font-size: 14px; color: #92400e; margin-bottom: 8px; }
+    .product-form .row { display: flex; gap: 8px; }
+    .product-form .row input { flex: 1; padding: 8px; font-size: 13px; }
+    .product-form .btn { margin-top: 8px; padding: 9px; font-size: 13px; }
+
+    @media (max-width: 400px) { .container { padding: 15px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🧾 Smart POS - Bill Scanner</h2>
+
+    <!-- Printer status -->
+    <div class="header-status">
+        <span style="font-size:13px; font-weight:600; color:#333;">प्रिंटर स्टेटस:</span>
+        <button id="printerBtn" class="btn-connect" onclick="connectPrinter()">🖨️ Connect Printer</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('qr')" id="tab-qr">📱 QR Scanner</button>
+        <button class="tab-btn" onclick="switchTab('barcode')" id="tab-barcode">📊 Barcode Scanner</button>
+    </div>
+
+    <!-- ============ TAB 1: QR SCANNER ============ -->
+    <div class="tab-panel active" id="panel-qr">
+        <p style="text-align:center; font-size:13px; color:#64748b; margin-bottom:12px;">
+            QR स्टिकर को कैमरे के सामने रखें या गैलरी से फोटो चुनें।
+        </p>
+        <div class="scanner-box">
+            <div id="qr-reader"></div>
+        </div>
+        <div id="qr-result" class="scan-result hidden"></div>
+
+        <div class="scan-actions">
+            <button class="btn btn-scan" id="qr-start-btn" onclick="startQrScanner()">📷 कैमरा</button>
+            <button class="btn btn-gallery" onclick="scanQrFromGallery()">🖼️ गैलरी</button>
+        </div>
+        <button class="btn btn-stop hidden" id="qr-stop-btn" onclick="stopQrScanner()">⏹️ स्कैनर बंद करें</button>
+
+        <div class="manual-entry">
+            <input type="text" id="qr-manual-input" placeholder="QR कोड मैन्युअली डालें...">
+            <button class="btn btn-primary" onclick="manualAddCode('qr')">जोड़ें</button>
+        </div>
+    </div>
+
+    <!-- ============ TAB 2: BARCODE SCANNER ============ -->
+    <div class="tab-panel" id="panel-barcode">
+        <p style="text-align:center; font-size:13px; color:#64748b; margin-bottom:12px;">
+            Barcode स्टिकर को कैमरे के सामने रखें या गैलरी से फोटो चुनें।
+        </p>
+        <div class="scanner-box">
+            <div id="barcode-reader"></div>
+        </div>
+        <div id="barcode-result" class="scan-result hidden"></div>
+
+        <div class="scan-actions">
+            <button class="btn btn-scan" id="barcode-start-btn" onclick="startBarcodeScanner()">📷 कैमरा</button>
+            <button class="btn btn-gallery" onclick="scanBarcodeFromGallery()">🖼️ गैलरी</button>
+        </div>
+        <button class="btn btn-stop hidden" id="barcode-stop-btn" onclick="stopBarcodeScanner()">⏹️ स्कैनर बंद करें</button>
+
+        <div class="manual-entry">
+            <input type="text" id="barcode-manual-input" placeholder="बारकोड नंबर मैन्युअली डालें...">
+            <button class="btn btn-primary" onclick="manualAddCode('barcode')">जोड़ें</button>
+        </div>
+    </div>
+
+    <!-- ============ PRODUCT ADD FORM (for unknown codes) ============ -->
+    <div class="product-form hidden" id="product-form">
+        <h4>⚠️ नया कोड मिला — प्रोडक्ट डिटेल भरें</h4>
+        <div class="row">
+            <input type="text" id="pf-name" placeholder="प्रोडक्ट नाम">
+            <input type="text" id="pf-price" placeholder="₹ कीमत" inputmode="decimal">
+        </div>
+        <button class="btn btn-primary" onclick="saveNewProduct()">✅ बिल में जोड़ें</button>
+    </div>
+
+    <!-- ============ CUSTOMER BILL PANEL ============ -->
+    <div class="bill-panel">
+        <div class="bill-panel-header">
+            <span>🧾 कस्टमर बिल</span>
+            <span class="badge" id="bill-count">0 आइटम</span>
+        </div>
+        <div class="bill-items" id="bill-items">
+            <div class="bill-empty">अभी कोई आइटम नहीं। स्कैन करें या कोड जोड़ें।</div>
+        </div>
+        <div class="bill-total">
+            <span>कुल (Total):</span>
+            <span id="bill-total-amount">₹0.00</span>
+        </div>
+        <div class="bill-actions">
+            <button class="btn btn-danger" onclick="clearBill()">🗑️ बिल खाली</button>
+            <button class="btn btn-print" onclick="printBill()">🖨️ बिल प्रिंट</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   GLOBAL STATE
+   ============================================================ */
+const printerBtn = document.getElementById("printerBtn");
+let bluetoothCharacteristic = null;
+
+// Product database: code -> { name, price }
+const productDB = JSON.parse(localStorage.getItem("posProductDB") || "{}");
+
+// Bill items
+let billItems = [];
+
+// Pending scan (when unknown code found)
+let pendingCode = null;
+let pendingSourceType = null;
+
+/* ============================================================
+   PRODUCT DB PERSISTENCE
+   ============================================================ */
+function saveProductDB() {
+    localStorage.setItem("posProductDB", JSON.stringify(productDB));
+}
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+function switchTab(tab) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("panel-" + tab).classList.add("active");
+    document.getElementById("tab-" + tab).classList.add("active");
+
+    if (tab !== "qr") stopQrScanner();
+    if (tab !== "barcode") stopBarcodeScanner();
+}
+
+/* ============================================================
+   BLUETOOTH PRINTER CONNECTION
+   ============================================================ */
+async function connectPrinter() {
+    if (!navigator.bluetooth) {
+        alert("इस ब्राउज़र में Web Bluetooth सपोर्ट नहीं है। Chrome (Android) में खोलें।");
+        return;
+    }
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                "000018f0-0000-1000-8000-00805f9b34fb",
+                "0000ff00-0000-1000-8000-00805f9b34fb",
+                "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+                "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+            ]
+        });
+        const server = await device.gatt.connect();
+        let service = null;
+        for (const uuid of [
+            "000018f0-0000-1000-8000-00805f9b34fb",
+            "0000ff00-0000-1000-8000-00805f9b34fb",
+            "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+            "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+        ]) {
+            try { service = await server.getPrimaryService(uuid); break; } catch (e) {}
+        }
+        if (!service) throw new Error("प्रिंटर सर्विस नहीं मिली");
+
+        const chars = await service.getCharacteristics();
+        bluetoothCharacteristic = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+        if (!bluetoothCharacteristic) throw new Error("Write characteristic नहीं मिली");
+
+        printerBtn.textContent = "✅ Printer Connected";
+        printerBtn.classList.add("online");
+        alert("✅ प्रिंटर कनेक्ट हो गया!");
+    } catch (err) {
+        console.error(err);
+        alert("प्रिंटर कनेक्ट नहीं हुआ: " + err.message);
+    }
+}
+
+/* ============================================================
+   BILL MANAGEMENT
+   ============================================================ */
+function handleScannedCode(code, sourceType) {
+    const resultBox = document.getElementById(sourceType === "qr" ? "qr-result" : "barcode-result");
+    resultBox.classList.remove("hidden", "error");
+
+    const product = productDB[code];
+
+    if (product) {
+        // Known product → add directly
+        const existing = billItems.find(i => i.code === code);
+        if (existing) existing.qty += 1;
+        else billItems.push({ code, name: product.name, price: product.price, qty: 1 });
+
+        renderBill();
+        resultBox.textContent = `✅ मिला: ${product.name} — ₹${product.price}`;
+        setTimeout(() => resultBox.classList.add("hidden"), 2200);
+    } else {
+        // Unknown code → show product form
+        pendingCode = code;
+        pendingSourceType = sourceType;
+        document.getElementById("pf-name").value = "";
+        document.getElementById("pf-price").value = "";
+        document.getElementById("product-form").classList.remove("hidden");
+        resultBox.classList.add("error");
+        resultBox.textContent = `❓ नया कोड: ${code} — कृपया प्रोडक्ट डिटेल भरें`;
+    }
+}
+
+function saveNewProduct() {
+    const name = document.getElementById("pf-name").value.trim();
+    const priceStr = document.getElementById("pf-price").value.trim();
+    const price = parseFloat(priceStr.replace(/[₹\s]/g, ""));
+
+    if (!name || isNaN(price) || price <= 0) {
+        alert("कृपया सही नाम और कीमत भरें!");
+        return;
+    }
+
+    if (!pendingCode) return;
+
+    productDB[pendingCode] = { name, price };
+    saveProductDB();
+
+    const existing = billItems.find(i => i.code === pendingCode);
+    if (existing) existing.qty += 1;
+    else billItems.push({ code: pendingCode, name, price, qty: 1 });
+
+    renderBill();
+
+    // Hide form & show success
+    document.getElementById("product-form").classList.add("hidden");
+    const resultBox = document.getElementById(pendingSourceType === "qr" ? "qr-result" : "barcode-result");
+    resultBox.classList.remove("error");
+    resultBox.textContent = `✅ जोड़ा: ${name} — ₹${price}`;
+    setTimeout(() => resultBox.classList.add("hidden"), 2200);
+
+    pendingCode = null;
+    pendingSourceType = null;
+}
+
+function cancelNewProduct() {
+    pendingCode = null;
+    pendingSourceType = null;
+    document.getElementById("product-form").classList.add("hidden");
+}
+
+function renderBill() {
+    const container = document.getElementById("bill-items");
+    const countEl = document.getElementById("bill-count");
+    const totalEl = document.getElementById("bill-total-amount");
+
+    if (billItems.length === 0) {
+        container.innerHTML = '<div class="bill-empty">अभी कोई आइटम नहीं। स्कैन करें या कोड जोड़ें।</div>';
+        countEl.textContent = "0 आइटम";
+        totalEl.textContent = "₹0.00";
+        return;
+    }
+
+    let total = 0;
+    let html = "";
+    billItems.forEach((item, idx) => {
+        const lineTotal = item.price * item.qty;
+        total += lineTotal;
+        html += `
+            <div class="bill-item">
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-code">कोड: ${item.code}</div>
+                    <div class="item-qty">
+                        <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+                        <span class="qty-num">${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+                    </div>
+                </div>
+                <div class="item-price">₹${lineTotal.toFixed(2)}</div>
+                <button class="item-remove" onclick="removeItem(${idx})">✕</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    countEl.textContent = billItems.length + " आइटम";
+    totalEl.textContent = "₹" + total.toFixed(2);
+}
+
+function changeQty(idx, delta) {
+    billItems[idx].qty += delta;
+    if (billItems[idx].qty <= 0) billItems.splice(idx, 1);
+    renderBill();
+}
+
+function removeItem(idx) {
+    billItems.splice(idx, 1);
+    renderBill();
+}
+
+function clearBill() {
+    if (billItems.length === 0) return;
+    if (confirm("पूरा बिल खाली कर दें?")) {
+        billItems = [];
+        renderBill();
+    }
+}
+
+/* ============================================================
+   BILL PRINTING via Bluetooth thermal printer
+   ============================================================ */
+async function printBill() {
+    if (billItems.length === 0) { alert("बिल खाली है!"); return; }
+    if (!bluetoothCharacteristic) {
+        alert("पहले प्रिंटर कनेक्ट करें!");
+        return;
+    }
+
+    try {
+        const textEncoder = new TextEncoder();
+        let total = 0;
+
+        let data = new Uint8Array([0x1B, 0x40, 0x1B, 0x61, 0x01, 0x1B, 0x45, 0x01, 0x1D, 0x21, 0x11]);
+        data = new Uint8Array([...data, ...textEncoder.encode("CUSTOMER BILL\n")]);
+        data = new Uint8Array([...data, 0x1D, 0x21, 0x00, 0x1B, 0x45, 0x00]);
+        data = new Uint8Array([...data, ...textEncoder.encode("------------------------------\n")]);
+
+        for (const item of billItems) {
+            const lineTotal = item.price * item.qty;
+            total += lineTotal;
+            const line = `${item.name}\n  ${item.qty} x ₹${item.price} = ₹${lineTotal.toFixed(2)}\n`;
+            data = new Uint8Array([...data, ...textEncoder.encode(line)]);
+        }
+
+        data = new Uint8Array([...data, ...textEncoder.encode("------------------------------\n")]);
+        data = new Uint8Array([...data, 0x1B, 0x45, 0x01]);
+        data = new Uint8Array([...data, ...textEncoder.encode(`TOTAL: ₹${total.toFixed(2)}\n\n\n`)]);
+        data = new Uint8Array([...data, 0x1D, 0x56, 0x00]);
+
+        await sendChunks(data);
+        alert("✅ बिल प्रिंट हो गया!");
+    } catch (err) {
+        console.error(err);
+        alert("बिल प्रिंट में समस्या: " + err.message);
+    }
+}
+
+async function sendChunks(dataArray) {
+    const chunkSize = 20;
+    for (let i = 0; i < dataArray.length; i += chunkSize) {
+        const chunk = dataArray.slice(i, i + chunkSize);
+        await bluetoothCharacteristic.writeValue(chunk);
+        await new Promise(r => setTimeout(r, 10));
+    }
+}
+
+/* ============================================================
+   QR SCANNER - CAMERA + GALLERY
+   ============================================================ */
+let qrScanner = null;
+let qrScanning = false;
+
+function startQrScanner() {
+    if (qrScanning) return;
+    document.getElementById("qr-start-btn").classList.add("hidden");
+    document.getElementById("qr-stop-btn").classList.remove("hidden");
+
+    qrScanner = new Html5Qrcode("qr-reader");
+    qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => { handleScannedCode(decodedText, "qr"); },
+        () => {}
+    ).then(() => { qrScanning = true; })
+    .catch(err => {
+        console.error(err);
+        alert("QR स्कैनर शुरू नहीं हो पाया: " + err.message);
+        document.getElementById("qr-start-btn").classList.remove("hidden");
+        document.getElementById("qr-stop-btn").classList.add("hidden");
+    });
+}
+
+function stopQrScanner() {
+    if (qrScanner && qrScanning) {
+        qrScanner.stop().then(() => {
+            qrScanner.clear();
+            qrScanning = false;
+            document.getElementById("qr-start-btn").classList.remove("hidden");
+            document.getElementById("qr-stop-btn").classList.add("hidden");
+        }).catch(() => {});
+    }
+}
+
+function scanQrFromGallery() {
+    if (qrScanning) stopQrScanner();
+
+    // Create hidden file input
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const resultBox = document.getElementById("qr-result");
+        resultBox.classList.remove("hidden", "error");
+        resultBox.textContent = "⏳ गैलरी इमेज स्कैन हो रही है...";
+
+        const tempScanner = new Html5Qrcode("qr-reader");
+        tempScanner.scanFile(file, true)
+            .then(decodedText => {
+                handleScannedCode(decodedText, "qr");
+                tempScanner.clear();
+            })
+            .catch(err => {
+                console.error(err);
+                resultBox.classList.add("error");
+                resultBox.textContent = "❌ गैलरी इमेज में QR कोड नहीं मिला। साफ फोटो चुनें।";
+                setTimeout(() => resultBox.classList.add("hidden"), 3000);
+                tempScanner.clear();
+            });
+    };
+    input.click();
+}
+
+/* ============================================================
+   BARCODE SCANNER - CAMERA + GALLERY
+   ============================================================ */
+let barcodeScanner = null;
+let barcodeScanning = false;
+
+function startBarcodeScanner() {
+    if (barcodeScanning) return;
+    document.getElementById("barcode-start-btn").classList.add("hidden");
+    document.getElementById("barcode-stop-btn").classList.remove("hidden");
+
+    barcodeScanner = new Html5Qrcode("barcode-reader");
+    barcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 280, height: 160 } },
+        (decodedText) => { handleScannedCode(decodedText, "barcode"); },
+        () => {}
+    ).then(() => { barcodeScanning = true; })
+    .catch(err => {
+        console.error(err);
+        alert("बारकोड स्कैनर शुरू नहीं हो पाया: " + err.message);
+        document.getElementById("barcode-start-btn").classList.remove("hidden");
+        document.getElementById("barcode-stop-btn").classList.add("hidden");
+    });
+}
+
+function stopBarcodeScanner() {
+    if (barcodeScanner && barcodeScanning) {
+        barcodeScanner.stop().then(() => {
+            barcodeScanner.clear();
+            barcodeScanning = false;
+            document.getElementById("barcode-start-btn").classList.remove("hidden");
+            document.getElementById("barcode-stop-btn").classList.add("hidden");
+        }).catch(() => {});
+    }
+}
+
+function scanBarcodeFromGallery() {
+    if (barcodeScanning) stopBarcodeScanner();
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const resultBox = document.getElementById("barcode-result");
+        resultBox.classList.remove("hidden", "error");
+        resultBox.textContent = "⏳ गैलरी इमेज स्कैन हो रही है...";
+
+        const tempScanner = new Html5Qrcode("barcode-reader");
+        tempScanner.scanFile(file, true)
+            .then(decodedText => {
+                handleScannedCode(decodedText, "barcode");
+                tempScanner.clear();
+            })
+            .catch(err => {
+                console.error(err);
+                resultBox.classList.add("error");
+                resultBox.textContent = "❌ गैलरी इमेज में बारकोड नहीं मिला। साफ फोटो चुनें।";
+                setTimeout(() => resultBox.classList.add("hidden"), 3000);
+                tempScanner.clear();
+            });
+    };
+    input.click();
+}
+
+/* ============================================================
+   MANUAL CODE ENTRY
+   ============================================================ */
+function manualAddCode(type) {
+    const inputEl = document.getElementById(type + "-manual-input");
+    const code = inputEl.value.trim();
+    if (!code) { alert("कृपया कोड डालें!"); return; }
+    handleScannedCode(code, type);
+    inputEl.value = "";
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderBill();
+</script>
+</body>
+</html>
