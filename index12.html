@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart POS - Sticker Maker + Bill Scanner</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #4f46e5, #7c3aed); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+
+    .container { background: #ffffff; width: 100%; max-width: 480px; padding: 22px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    h2 { color: #333; margin-bottom: 15px; font-weight: 600; font-size: 20px; text-align: center; }
+
+    /* TABS */
+    .tabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 18px; gap: 4px; }
+    .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 6px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #4f46e5; color: white; box-shadow: 0 2px 6px rgba(79,70,229,0.35); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .header-status { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+    .btn-connect { background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+    .btn-connect.online { background: #16a34a; }
+
+    .input-group { margin-bottom: 12px; text-align: left; }
+    label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 500; }
+    input, select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; transition: 0.3s; background: #fafafa; }
+    input:focus, select:focus { border-color: #4f46e5; background: #fff; }
+
+    .btn { border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+    .btn-primary { background-color: #4f46e5; color: white; }
+    .btn-primary:hover { background-color: #4338ca; }
+    .btn-print { background-color: #16a34a; color: white; }
+    .btn-print:hover { background-color: #15803d; }
+    .btn-secondary { background-color: #6b7280; color: white; }
+    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-danger { background-color: #dc2626; color: white; }
+    .btn-danger:hover { background-color: #b91c1c; }
+
+    /* Barcode size slider */
+    .barcode-controls { margin-top: 8px; display: flex; align-items: center; gap: 10px; background: #f3f4f6; padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; }
+    .barcode-controls label { margin: 0; font-size: 12px; font-weight: 600; color: #4b5563; white-space: nowrap; }
+    .barcode-controls input[type="range"] { flex: 1; padding: 0; height: 6px; border: none; background: #d1d5db; border-radius: 5px; accent-color: #4f46e5; cursor: pointer; }
+    .barcode-controls .size-value { font-size: 12px; font-weight: 600; color: #1f2937; min-width: 40px; text-align: right; }
+
+    .hidden { display: none !important; }
+
+    /* ===== SEPARATE STICKER PREVIEW PAGE ===== */
+    .preview-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 1000; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .preview-header h3 { font-size: 18px; color: #333; font-weight: 600; }
+    .btn-close { background: #ef4444; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .btn-close:hover { background: #dc2626; }
+
+    .sticker-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px; }
+    .sticker-card { background: #fff; border: 2px solid #111; border-radius: 12px; padding: 20px 15px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+    .preview-code-area { background: #fff; padding: 6px; margin-bottom: 12px; }
+    #preview-qrcode img, #preview-qrcode canvas { display: block; margin: 0 auto; }
+    #preview-barcode { max-width: 100%; height: auto; }
+    .preview-name { font-size: 18px; font-weight: 700; color: #000; text-transform: uppercase; margin-bottom: 4px; }
+    .preview-price { font-size: 16px; font-weight: 600; color: #000; }
+    .preview-actions { margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 380px; }
+    .preview-actions .btn { margin-top: 0; }
+
+    /* ===== SCANNER STYLES ===== */
+    .scanner-box {
+        width: 100%;
+        max-width: 340px;
+        margin: 0 auto 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #4f46e5;
+        background: #000;
+        min-height: 200px;
+        position: relative;
+    }
+    #qr-reader, #barcode-reader { width: 100% !important; }
+    #qr-reader video, #barcode-reader video { border-radius: 10px; }
+
+    .scan-result {
+        background: #f0fdf4;
+        border: 2px solid #16a34a;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #15803d;
+        text-align: center;
+        margin: 10px 0;
+    }
+    .scan-result.error {
+        background: #fef2f2;
+        border-color: #dc2626;
+        color: #b91c1c;
+    }
+
+    .btn-scan { background: #0ea5e9; color: white; }
+    .btn-scan:hover { background: #0284c7; }
+    .btn-stop { background: #f59e0b; color: white; }
+    .btn-stop:hover { background: #d97706; }
+
+    /* BILL PANEL */
+    .bill-panel {
+        margin-top: 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .bill-panel-header {
+        background: #4f46e5;
+        color: white;
+        padding: 10px 14px;
+        font-weight: 600;
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .bill-panel-header .badge {
+        background: white;
+        color: #4f46e5;
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 12px;
+    }
+    .bill-items { max-height: 260px; overflow-y: auto; }
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+        gap: 8px;
+    }
+    .bill-item:last-child { border-bottom: none; }
+    .bill-item .item-info { flex: 1; }
+    .bill-item .item-name { font-weight: 600; color: #1f2937; }
+    .bill-item .item-code { font-size: 11px; color: #94a3b8; }
+    .bill-item .item-price { font-weight: 700; color: #4f46e5; white-space: nowrap; }
+    .bill-item .item-qty { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .qty-btn {
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        color: #475569;
+        line-height: 1;
+    }
+    .qty-btn:hover { background: #e2e8f0; }
+    .qty-num { min-width: 20px; text-align: center; font-weight: 600; }
+    .item-remove {
+        border: none;
+        background: #fee2e2;
+        color: #dc2626;
+        width: 26px; height: 26px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .item-remove:hover { background: #fecaca; }
+
+    .bill-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: #eef2ff;
+        font-weight: 700;
+        font-size: 16px;
+        color: #312e81;
+    }
+    .bill-empty { padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+
+    .bill-actions { display: flex; gap: 8px; padding: 12px; background: #f8fafc; }
+    .bill-actions .btn { margin-top: 0; padding: 10px; font-size: 14px; }
+
+    /* Manual code entry in scanner */
+    .manual-entry { display: flex; gap: 8px; margin-top: 10px; }
+    .manual-entry input { flex: 1; }
+    .manual-entry button { flex: 0 0 auto; padding: 0 16px; margin-top: 0; }
+
+    @media (max-width: 400px) { .container { padding: 15px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🏷️ Smart POS</h2>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('sticker')" id="tab-sticker">🏷️ Sticker Maker</button>
+        <button class="tab-btn" onclick="switchTab('qr')" id="tab-qr">📱 QR Scanner</button>
+        <button class="tab-btn" onclick="switchTab('barcode')" id="tab-barcode">📊 Barcode Scanner</button>
+    </div>
+
+    <!-- ============ TAB 1: STICKER MAKER ============ -->
+    <div class="tab-panel active" id="panel-sticker">
+        <div class="header-status">
+            <span style="font-size:13px; font-weight:600; color:#333;">प्रिंटर स्टेटस:</span>
+            <button id="printerBtn" class="btn-connect" onclick="connectPrinter()">🖨️ Connect Printer</button>
+        </div>
+
+        <div class="input-group">
+            <label>प्रोडक्ट का नाम (Product Name):</label>
+            <input type="text" id="p-name" placeholder="जैसे: Tata Salt 1kg" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label>कीमत (Price):</label>
+            <input type="text" id="p-price" placeholder="₹ 00.00 (या ₹ symbol टाइप करें)" autocomplete="off" inputmode="text">
+        </div>
+
+        <div class="barcode-controls" id="barcode-size-controls">
+            <label>📏 बारकोड साइज़:</label>
+            <input type="range" id="barcode-size-slider" min="1" max="4" step="0.5" value="2">
+            <span class="size-value" id="barcode-size-value">2.0x</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="generateSticker()">👁️ स्टिकर प्रीव्यू बनाएं</button>
+    </div>
+
+    <!-- ============ TAB 2: QR SCANNER ============ -->
+    <div class="tab-panel" id="panel-qr">
+        <p style="text-align:center; font-size:13px; color:#64748b; margin-bottom:12px;">
+            QR स्टिकर को कैमरे के सामने रखें — बिल में अपने आप जुड़ जाएगा।
+        </p>
+        <div class="scanner-box">
+            <div id="qr-reader"></div>
+        </div>
+        <div id="qr-result" class="scan-result hidden"></div>
+
+        <button class="btn btn-scan" id="qr-start-btn" onclick="startQrScanner()">📷 QR स्कैनर चालू करें</button>
+        <button class="btn btn-stop hidden" id="qr-stop-btn" onclick="stopQrScanner()">⏹️ स्कैनर बंद करें</button>
+
+        <div class="manual-entry">
+            <input type="text" id="qr-manual-input" placeholder="QR कोड मैन्युअली डालें...">
+            <button class="btn btn-primary" onclick="manualAddCode('qr')">जोड़ें</button>
+        </div>
+    </div>
+
+    <!-- ============ TAB 3: BARCODE SCANNER ============ -->
+    <div class="tab-panel" id="panel-barcode">
+        <p style="text-align:center; font-size:13px; color:#64748b; margin-bottom:12px;">
+            Barcode स्टिकर को कैमरे के सामने रखें — बिल में अपने आप जुड़ जाएगा।
+        </p>
+        <div class="scanner-box">
+            <div id="barcode-reader"></div>
+        </div>
+        <div id="barcode-result" class="scan-result hidden"></div>
+
+        <button class="btn btn-scan" id="barcode-start-btn" onclick="startBarcodeScanner()">📷 बारकोड स्कैनर चालू करें</button>
+        <button class="btn btn-stop hidden" id="barcode-stop-btn" onclick="stopBarcodeScanner()">⏹️ स्कैनर बंद करें</button>
+
+        <div class="manual-entry">
+            <input type="text" id="barcode-manual-input" placeholder="बारकोड नंबर मैन्युअली डालें...">
+            <button class="btn btn-primary" onclick="manualAddCode('barcode')">जोड़ें</button>
+        </div>
+    </div>
+
+    <!-- ============ CUSTOMER BILL PANEL (shared across tabs) ============ -->
+    <div class="bill-panel">
+        <div class="bill-panel-header">
+            <span>🧾 कस्टमर बिल</span>
+            <span class="badge" id="bill-count">0 आइटम</span>
+        </div>
+        <div class="bill-items" id="bill-items">
+            <div class="bill-empty">अभी कोई आइटम नहीं। स्कैन करें या कोड जोड़ें।</div>
+        </div>
+        <div class="bill-total">
+            <span>कुल (Total):</span>
+            <span id="bill-total-amount">₹0.00</span>
+        </div>
+        <div class="bill-actions">
+            <button class="btn btn-danger" onclick="clearBill()">🗑️ बिल खाली करें</button>
+            <button class="btn btn-print" onclick="printBill()">🖨️ बिल प्रिंट करें</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SEPARATE STICKER PREVIEW PAGE ===== -->
+<div class="preview-page hidden" id="preview-page">
+    <div class="preview-header">
+        <h3>📄 Sticker Preview</h3>
+        <button class="btn-close" onclick="closePreview()">✕</button>
+    </div>
+
+    <div class="sticker-stage">
+        <div class="sticker-card">
+            <div class="preview-code-area">
+                <div id="preview-qrcode" class="hidden"></div>
+                <svg id="preview-barcode" class="hidden"></svg>
+            </div>
+            <div class="preview-name" id="preview-name"></div>
+            <div class="preview-price" id="preview-price"></div>
+        </div>
+
+        <div class="preview-actions">
+            <button class="btn btn-secondary" onclick="closePreview()">✏️ एडिट करें</button>
+            <button class="btn btn-print" id="preview-print-btn" onclick="printSticker()">🖨️ प्रिंट करें</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   GLOBAL STATE
+   ============================================================ */
+const printerBtn = document.getElementById("printerBtn");
+const barcodeSizeSlider = document.getElementById("barcode-size-slider");
+const barcodeSizeValue = document.getElementById("barcode-size-value");
+const previewPage = document.getElementById("preview-page");
+const previewQr = document.getElementById("preview-qrcode");
+const previewBarcode = document.getElementById("preview-barcode");
+const previewName = document.getElementById("preview-name");
+const previewPrice = document.getElementById("preview-price");
+const previewPrintBtn = document.getElementById("preview-print-btn");
+
+let currentCodeType = "";
+let currentBarcodeData = "";
+let bluetoothCharacteristic = null;
+
+// Product database: code -> { name, price }
+const productDB = {};
+
+// Bill items: array of { code, name, price, qty }
+let billItems = [];
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+function switchTab(tab) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("panel-" + tab).classList.add("active");
+    document.getElementById("tab-" + tab).classList.add("active");
+
+    // Stop scanners when leaving their tab
+    if (tab !== "qr") stopQrScanner();
+    if (tab !== "barcode") stopBarcodeScanner();
+}
+
+/* ============================================================
+   BARCODE SIZE SLIDER
+   ============================================================ */
+barcodeSizeSlider.addEventListener("input", function() {
+    const val = parseFloat(this.value).toFixed(1);
+    barcodeSizeValue.textContent = val + "x";
+    if (currentCodeType === "barcode" && currentBarcodeData) {
+        renderBarcode(currentBarcodeData, parseFloat(this.value), previewBarcode);
+    }
+});
+
+/* ============================================================
+   BLUETOOTH PRINTER CONNECTION
+   ============================================================ */
+async function connectPrinter() {
+    if (!navigator.bluetooth) {
+        alert("इस ब्राउज़र में Web Bluetooth सपोर्ट नहीं है। Chrome (Android) में खोलें।");
+        return;
+    }
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                "000018f0-0000-1000-8000-00805f9b34fb",
+                "0000ff00-0000-1000-8000-00805f9b34fb",
+                "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+                "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+            ]
+        });
+        const server = await device.gatt.connect();
+        let service = null;
+        for (const uuid of [
+            "000018f0-0000-1000-8000-00805f9b34fb",
+            "0000ff00-0000-1000-8000-00805f9b34fb",
+            "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+            "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+        ]) {
+            try { service = await server.getPrimaryService(uuid); break; } catch (e) {}
+        }
+        if (!service) throw new Error("प्रिंटर सर्विस नहीं मिली");
+
+        const chars = await service.getCharacteristics();
+        bluetoothCharacteristic = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+        if (!bluetoothCharacteristic) throw new Error("Write characteristic नहीं मिली");
+
+        printerBtn.textContent = "✅ Printer Connected";
+        printerBtn.classList.add("online");
+        alert("✅ प्रिंटर कनेक्ट हो गया!");
+    } catch (err) {
+        console.error(err);
+        alert("प्रिंटर कनेक्ट नहीं हुआ: " + err.message);
+    }
+}
+
+/* ============================================================
+   RENDER BARCODE
+   ============================================================ */
+function renderBarcode(code, widthMultiplier, targetSvg) {
+    targetSvg.classList.remove("hidden");
+    try {
+        JsBarcode(targetSvg, code, {
+            format: "CODE128",
+            lineColor: "#000000",
+            width: widthMultiplier,
+            height: 60,
+            displayValue: true,
+            fontSize: 12,
+            margin: 0
+        });
+        return true;
+    } catch (e) {
+        alert("यह कोड बारकोड के लिए मान्य नहीं है। (सिर्फ अंक/अंग्रेजी अक्षर डालें)");
+        targetSvg.classList.add("hidden");
+        return false;
+    }
+}
+
+/* ============================================================
+   GENERATE STICKER → OPEN SEPARATE PREVIEW PAGE
+   ============================================================ */
+function generateSticker() {
+    const name = document.getElementById("p-name").value.trim();
+    const price = document.getElementById("p-price").value.trim();
+
+    if (!name || !price) {
+        alert("कृपया नाम और कीमत दोनों भरें!");
+        return;
+    }
+
+    previewQr.innerHTML = "";
+    previewQr.classList.add("hidden");
+    previewBarcode.classList.add("hidden");
+    previewName.textContent = name;
+    previewPrice.textContent = price;
+
+    const barcodeData = price.replace(/[₹\s]/g, "");
+    if (!barcodeData) {
+        alert("कीमत में बारकोड बनाने के लिए कम से कम एक अंक या अक्षर डालें!");
+        return;
+    }
+    currentBarcodeData = barcodeData;
+
+    // Save product to DB so scanners can recognise it later
+    productDB[barcodeData] = { name: name, price: parseFloat(barcodeData) || 0, rawPrice: price };
+
+    const widthMultiplier = parseFloat(barcodeSizeSlider.value);
+    const success = renderBarcode(barcodeData, widthMultiplier, previewBarcode);
+    if (!success) return;
+
+    currentCodeType = "barcode";
+    previewPage.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function closePreview() {
+    previewPage.classList.add("hidden");
+    document.body.style.overflow = "";
+}
+
+/* ============================================================
+   IMAGE → RASTER & PRINTING
+   ============================================================ */
+function imageToRasterData(imageElement) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const width = imageElement.width || imageElement.clientWidth;
+    const height = imageElement.height || imageElement.clientHeight;
+
+    const targetWidth = 384;
+    const scale = targetWidth / width;
+    canvas.width = targetWidth;
+    canvas.height = Math.floor(height * scale);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imgData.data;
+    const widthBytes = Math.ceil(canvas.width / 8);
+
+    const rasterData = new Uint8Array(widthBytes * canvas.height);
+    let byteIndex = 0;
+
+    for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x += 8) {
+            let byte = 0;
+            for (let bit = 0; bit < 8; bit++) {
+                if (x + bit < canvas.width) {
+                    const pixelIndex = (y * canvas.width + (x + bit)) * 4;
+                    const r = pixels[pixelIndex];
+                    const g = pixels[pixelIndex + 1];
+                    const b = pixels[pixelIndex + 2];
+                    const brightness = (r + g + b) / 3;
+                    if (brightness < 128) byte |= (1 << (7 - bit));
+                }
+            }
+            rasterData[byteIndex++] = byte;
+        }
+    }
+
+    const header = new Uint8Array([
+        0x1D, 0x76, 0x30, 0x00,
+        widthBytes & 0xFF, (widthBytes >> 8) & 0xFF,
+        canvas.height & 0xFF, (canvas.height >> 8) & 0xFF
+    ]);
+
+    const finalData = new Uint8Array(header.length + rasterData.length);
+    finalData.set(header, 0);
+    finalData.set(rasterData, header.length);
+    return finalData;
+}
+
+async function printSticker() {
+    if (!bluetoothCharacteristic) {
+        alert("पहले प्रिंटर कनेक्ट करें (ऊपर लाल बटन दबाएं)!");
+        return;
+    }
+    if (!currentCodeType) return;
+
+    try {
+        previewPrintBtn.textContent = "⏳ प्रिंट हो रहा है...";
+        previewPrintBtn.disabled = true;
+
+        const name = previewName.textContent;
+        const price = previewPrice.textContent;
+
+        const svgData = new XMLSerializer().serializeToString(previewBarcode);
+        const img = new Image();
+        await new Promise((resolve) => {
+            img.onload = resolve;
+            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        });
+        if (!img) throw new Error("इमेज नहीं बन पाई");
+
+        const rasterData = imageToRasterData(img);
+        await sendChunks(rasterData);
+
+        const textEncoder = new TextEncoder();
+        let textData = new Uint8Array([0x1B, 0x40, 0x1B, 0x61, 0x01, 0x1B, 0x45, 0x01, 0x1D, 0x21, 0x11]);
+        textData = new Uint8Array([...textData, ...textEncoder.encode(name + "\n")]);
+        textData = new Uint8Array([...textData, 0x1D, 0x21, 0x00, 0x1B, 0x45, 0x00, ...textEncoder.encode(price + "\n\n")]);
+        await sendChunks(textData);
+
+        let footerData = new Uint8Array([0x1B, 0x61, 0x01, ...textEncoder.encode("\n\n\n")]);
+        footerData = new Uint8Array([...footerData, 0x1D, 0x56, 0x00]);
+        await sendChunks(footerData);
+
+        previewPrintBtn.textContent = "🖨️ प्रिंट करें";
+        previewPrintBtn.disabled = false;
+
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = ctx.createOscillator();
+            o.connect(ctx.destination);
+            o.frequency.value = 1000;
+            o.start(); o.stop(ctx.currentTime + 0.15);
+        } catch (e) {}
+
+    } catch (err) {
+        console.error(err);
+        alert("प्रिंटिंग में समस्या: " + err.message);
+        previewPrintBtn.textContent = "🖨️ प्रिंट करें";
+        previewPrintBtn.disabled = false;
+    }
+}
+
+async function sendChunks(dataArray) {
+    const chunkSize = 20;
+    for (let i = 0; i < dataArray.length; i += chunkSize) {
+        const chunk = dataArray.slice(i, i + chunkSize);
+        await bluetoothCharacteristic.writeValue(chunk);
+        await new Promise(r => setTimeout(r, 10));
+    }
+}
+
+/* ============================================================
+   BILL MANAGEMENT
+   ============================================================ */
+function addToBill(code, sourceType) {
+    const resultBox = document.getElementById(sourceType === "qr" ? "qr-result" : "barcode-result");
+    resultBox.classList.remove("hidden", "error");
+
+    let product = productDB[code];
+    let name, price;
+
+    if (product) {
+        name = product.name;
+        price = product.price;
+        resultBox.textContent = `✅ मिला: ${name} — ₹${price}`;
+    } else {
+        // Unknown code — try to interpret as price itself
+        const num = parseFloat(code);
+        if (!isNaN(num) && num > 0) {
+            name = "Unknown Item (" + code + ")";
+            price = num;
+            resultBox.textContent = `⚠️ नया आइटम जोड़ा: ${name} — ₹${price}`;
+        } else {
+            resultBox.classList.add("error");
+            resultBox.textContent = `❌ कोड पहचाना नहीं गया: ${code}`;
+            setTimeout(() => resultBox.classList.add("hidden"), 2500);
+            return;
+        }
+    }
+
+    const existing = billItems.find(i => i.code === code);
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        billItems.push({ code, name, price, qty: 1 });
+    }
+    renderBill();
+
+    setTimeout(() => resultBox.classList.add("hidden"), 2200);
+}
+
+function renderBill() {
+    const container = document.getElementById("bill-items");
+    const countEl = document.getElementById("bill-count");
+    const totalEl = document.getElementById("bill-total-amount");
+
+    if (billItems.length === 0) {
+        container.innerHTML = '<div class="bill-empty">अभी कोई आइटम नहीं। स्कैन करें या कोड जोड़ें।</div>';
+        countEl.textContent = "0 आइटम";
+        totalEl.textContent = "₹0.00";
+        return;
+    }
+
+    let total = 0;
+    let html = "";
+    billItems.forEach((item, idx) => {
+        const lineTotal = item.price * item.qty;
+        total += lineTotal;
+        html += `
+            <div class="bill-item">
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-code">कोड: ${item.code}</div>
+                    <div class="item-qty">
+                        <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+                        <span class="qty-num">${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+                    </div>
+                </div>
+                <div class="item-price">₹${lineTotal.toFixed(2)}</div>
+                <button class="item-remove" onclick="removeItem(${idx})">✕</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    countEl.textContent = billItems.length + " आइटम";
+    totalEl.textContent = "₹" + total.toFixed(2);
+}
+
+function changeQty(idx, delta) {
+    billItems[idx].qty += delta;
+    if (billItems[idx].qty <= 0) billItems.splice(idx, 1);
+    renderBill();
+}
+
+function removeItem(idx) {
+    billItems.splice(idx, 1);
+    renderBill();
+}
+
+function clearBill() {
+    if (billItems.length === 0) return;
+    if (confirm("पूरा बिल खाली कर दें?")) {
+        billItems = [];
+        renderBill();
+    }
+}
+
+/* ============================================================
+   BILL PRINTING (via Bluetooth thermal printer)
+   ============================================================ */
+async function printBill() {
+    if (billItems.length === 0) {
+        alert("बिल खाली है!");
+        return;
+    }
+    if (!bluetoothCharacteristic) {
+        alert("पहले प्रिंटर कनेक्ट करें (Sticker Maker टैब में ऊपर लाल बटन)!");
+        return;
+    }
+
+    try {
+        const textEncoder = new TextEncoder();
+        let total = 0;
+
+        // Header
+        let data = new Uint8Array([0x1B, 0x40, 0x1B, 0x61, 0x01, 0x1B, 0x45, 0x01, 0x1D, 0x21, 0x11]);
+        data = new Uint8Array([...data, ...textEncoder.encode("CUSTOMER BILL\n")]);
+        data = new Uint8Array([...data, 0x1D, 0x21, 0x00, 0x1B, 0x45, 0x00]);
+        data = new Uint8Array([...data, ...textEncoder.encode("------------------------------\n")]);
+
+        // Items
+        for (const item of billItems) {
+            const lineTotal = item.price * item.qty;
+            total += lineTotal;
+            const line = `${item.name}\n  ${item.qty} x ₹${item.price} = ₹${lineTotal.toFixed(2)}\n`;
+            data = new Uint8Array([...data, ...textEncoder.encode(line)]);
+        }
+
+        data = new Uint8Array([...data, ...textEncoder.encode("------------------------------\n")]);
+        data = new Uint8Array([...data, 0x1B, 0x45, 0x01]);
+        data = new Uint8Array([...data, ...textEncoder.encode(`TOTAL: ₹${total.toFixed(2)}\n\n\n`)]);
+        data = new Uint8Array([...data, 0x1D, 0x56, 0x00]);
+
+        await sendChunks(data);
+        alert("✅ बिल प्रिंट हो गया!");
+    } catch (err) {
+        console.error(err);
+        alert("बिल प्रिंट में समस्या: " + err.message);
+    }
+}
+
+/* ============================================================
+   QR SCANNER (using html5-qrcode)
+   ============================================================ */
+let qrScanner = null;
+let qrScanning = false;
+
+function startQrScanner() {
+    if (qrScanning) return;
+    document.getElementById("qr-start-btn").classList.add("hidden");
+    document.getElementById("qr-stop-btn").classList.remove("hidden");
+
+    qrScanner = new Html5Qrcode("qr-reader");
+    qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+            addToBill(decodedText, "qr");
+        },
+        () => {}
+    ).then(() => {
+        qrScanning = true;
+    }).catch(err => {
+        console.error(err);
+        alert("QR स्कैनर शुरू नहीं हो पाया: " + err.message);
+        document.getElementById("qr-start-btn").classList.remove("hidden");
+        document.getElementById("qr-stop-btn").classList.add("hidden");
+    });
+}
+
+function stopQrScanner() {
+    if (qrScanner && qrScanning) {
+        qrScanner.stop().then(() => {
+            qrScanner.clear();
+            qrScanning = false;
+            document.getElementById("qr-start-btn").classList.remove("hidden");
+            document.getElementById("qr-stop-btn").classList.add("hidden");
+        }).catch(() => {});
+    }
+}
+
+/* ============================================================
+   BARCODE SCANNER (using html5-qrcode)
+   ============================================================ */
+let barcodeScanner = null;
+let barcodeScanning = false;
+
+function startBarcodeScanner() {
+    if (barcodeScanning) return;
+    document.getElementById("barcode-start-btn").classList.add("hidden");
+    document.getElementById("barcode-stop-btn").classList.remove("hidden");
+
+    barcodeScanner = new Html5Qrcode("barcode-reader");
+    barcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 280, height: 160 } },
+        (decodedText) => {
+            addToBill(decodedText, "barcode");
+        },
+        () => {}
+    ).then(() => {
+        barcodeScanning = true;
+    }).catch(err => {
+        console.error(err);
+        alert("बारकोड स्कैनर शुरू नहीं हो पाया: " + err.message);
+        document.getElementById("barcode-start-btn").classList.remove("hidden");
+        document.getElementById("barcode-stop-btn").classList.add("hidden");
+    });
+}
+
+function stopBarcodeScanner() {
+    if (barcodeScanner && barcodeScanning) {
+        barcodeScanner.stop().then(() => {
+            barcodeScanner.clear();
+            barcodeScanning = false;
+            document.getElementById("barcode-start-btn").classList.remove("hidden");
+            document.getElementById("barcode-stop-btn").classList.add("hidden");
+        }).catch(() => {});
+    }
+}
+
+/* ============================================================
+   MANUAL CODE ENTRY
+   ============================================================ */
+function manualAddCode(type) {
+    const inputEl = document.getElementById(type + "-manual-input");
+    const code = inputEl.value.trim();
+    if (!code) {
+        alert("कृपया कोड डालें!");
+        return;
+    }
+    addToBill(code, type);
+    inputEl.value = "";
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+barcodeSizeValue.textContent = parseFloat(barcodeSizeSlider.value).toFixed(1) + "x";
+renderBill();
+</script>
+</body>
+</html>
