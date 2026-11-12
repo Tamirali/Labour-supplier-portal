@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>काश्मीरी रजाई एवं गद्दा सेन्टर - पचरुखी (सिवान)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#DC2626',
+                        brandGold: '#F59E0B',
+                        brandDark: '#0F172A'
+                    },
+                    fontFamily: {
+                        hindi: ['"Tiro Devanagari Hindi"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styling for horizontal scroll */
+        .horizontal-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 8px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 8px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .sticky-banner-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        /* Image Viewer Zoom Touch Handling */
+        #zoomImage {
+            touch-action: none;
+            user-select: none;
+            transition: transform 0.1s ease-out;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-slate-900 text-slate-100 pb-12 min-h-full flex flex-col">
+
+    <!-- ================= STICKY TOP HEADER & BRANDING ================= -->
+    <header class="sticky top-0 z-40 bg-slate-800/95 backdrop-blur-md sticky-banner-shadow border-b border-slate-700">
+        <!-- Top Info Bar -->
+        <div class="bg-gradient-to-r from-red-700 via-rose-700 to-amber-600 text-white px-3 py-1.5 text-xs sm:text-sm">
+            <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-1">
+                <div class="flex items-center gap-1.5 font-semibold">
+                    <i class="fa-solid fa-user text-amber-300"></i>
+                    <span>प्रो. - अली अख्तर</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="tel:9939055492" class="hover:text-amber-200 transition flex items-center gap-1 font-medium">
+                        <i class="fa-solid fa-phone text-xs"></i> 9939055492
+                    </a>
+                    <span class="text-white/40">|</span>
+                    <a href="tel:6299978619" class="hover:text-amber-200 transition flex items-center gap-1 font-medium">
+                        <i class="fa-solid fa-phone text-xs"></i> 6299978619
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Header Title and Location Button -->
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-2.5">
+            <div class="text-center sm:text-left">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-red-500 font-hindi tracking-wide leading-tight drop-shadow">
+                    काश्मीरी रजाई एवं गद्दा सेन्टर
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-300 flex items-center justify-center sm:justify-start gap-1 mt-0.5">
+                    <i class="fa-solid fa-location-dot text-red-500"></i>
+                    मेन रोड हाई स्कूल के पास, पचरुखी (सिवान)
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
+                <a href="https://www.google.com/maps?q=26.161669,84.414292" target="_blank" rel="noopener noreferrer" 
+                   class="flex-1 sm:flex-none text-center bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1.5 border border-slate-600 shadow-sm">
+                    <i class="fa-solid fa-map-location-dot text-red-400 text-sm"></i>
+                    <span>मैप लोकेशन (GPS)</span>
+                </a>
+                
+                <a href="https://wa.me/919939055492?text=नमस्ते!%20मुझे%20आपके%20काश्मीरी%20रजाई%20एवं%20गद्दा%20सेन्टर%20के%20प्रोडक्ट्स%20की%20जानकारी%20चाहिए।" target="_blank" 
+                   class="flex-1 sm:flex-none text-center bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-base"></i>
+                    <span>व्हाट्सएप</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full px-4 pt-4 flex-grow">
+
+        <!-- ================= EDITABLE BANNER SECTION ================= -->
+        <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-700 via-rose-700 to-amber-600 text-white shadow-xl p-5 sm:p-6 mb-6 border border-red-500/30">
+            <div class="absolute -right-6 -bottom-6 opacity-15 text-white pointer-events-none">
+                <i class="fa-solid fa-bed text-9xl"></i>
+            </div>
+
+            <div class="relative z-10">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                    <span class="bg-black/30 backdrop-blur-md text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-amber-400/30">
+                        <i class="fa-solid fa-bullhorn mr-1"></i> विशेष धमाका ऑफर
+                    </span>
+                    <button onclick="toggleDiscountEditor()" class="bg-black/30 hover:bg-black/50 backdrop-blur-sm text-xs font-medium px-3 py-1 rounded-lg transition flex items-center gap-1.5 text-white border border-white/20">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>बैनर डिस्काउंट एडिट करें</span>
+                    </button>
+                </div>
+
+                <!-- Editable Discount Banner Heading -->
+                <div class="my-2">
+                    <div id="bannerText" class="text-2xl sm:text-4xl font-black tracking-tight drop-shadow text-yellow-300 font-hindi">
+                        विशेष 25% छूट (Discount) सभी सर्दियों के सामानों पर!
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-100 mt-2 max-w-xl font-hindi leading-relaxed">
+                        हमारे यहाँ रजाई, गद्दा, डनलप गद्दा, मशलन, कुसुम, परदा, कम्बल, बेडसिट, मच्छरदानी, कभर इत्यादि उचित मूल्य पर उपलब्ध है।
+                    </p>
+                </div>
+
+                <!-- Admin Banner Text Editor Panel -->
+                <div id="discountEditorPanel" class="hidden mt-4 p-3.5 bg-slate-900 text-slate-100 rounded-xl shadow-2xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">बैनर पर डिस्काउंट मैसेज बदलें (% या आधी छूट लिखें):</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="bannerInput" value="विशेष 25% छूट (Discount) सभी सर्दियों के सामानों पर!" 
+                               class="flex-1 text-xs sm:text-sm px-3.5 py-2 bg-slate-800 text-white border border-slate-700 rounded-lg focus:outline-none focus:border-red-500">
+                        <button onclick="updateBannerText()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-check"></i>
+                            <span>सेव करें</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Location Coordinates Badge -->
+                <div class="mt-4 pt-3 border-t border-white/20 text-[11px] sm:text-xs flex flex-wrap items-center justify-between gap-2 text-rose-100">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-compass text-amber-300"></i>
+                        <span>GPS Location: 26°09'42.01″N 84°24'51.45"E</span>
+                    </div>
+                    <span class="text-amber-200 font-medium">फोटो ज़ूम करने के लिए कार्ड पर टैप करें <i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HORIZONTAL SCROLL PRODUCT SHOWCASE ================= -->
+        <section class="mb-8">
+            <div class="flex justify-between items-end mb-3 px-1">
+                <div>
+                    <h2 class="text-xl font-bold text-white font-hindi flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-red-500"></i>
+                        उत्पाद शोकेस (Showcase)
+                    </h2>
+                    <p class="text-xs text-slate-400">बायें-दाएं स्क्रॉल करें | फोटो पर क्लिक करके फुल-स्क्रीन में उंगलियों से ज़ूम करें</p>
+                </div>
+                <button onclick="scrollToUpload()" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <span>नया अपलोड</span>
+                </button>
+            </div>
+
+            <!-- Horizontal Scroll Cards Container -->
+            <div id="productContainer" class="horizontal-scroll flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory">
+                <!-- Products dynamically rendered here -->
+            </div>
+        </section>
+
+        <!-- ================= PRODUCT UPLOAD FORM ================= -->
+        <section id="uploadSection" class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-5 sm:p-6 mb-8">
+            <div class="border-b border-slate-700 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white font-hindi flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-red-500"></i>
+                        गैलरी से नया प्रोडक्ट अपलोड करें
+                    </h3>
+                    <p class="text-xs text-slate-400">सिस्टम इस फोटो को स्वतः कंप्रेस करके छोटा शोकेस बनाएगा</p>
+                </div>
+            </div>
+
+            <form id="productForm" onsubmit="handleProductSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Product Title -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">प्रोडक्ट का नाम *</label>
+                        <input type="text" id="prodTitle" required placeholder="जैसे: कश्मीरी डबल बेड रजाई" 
+                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <!-- Discount Tag Input -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">डिस्काउंट / ऑफर टैग *</label>
+                        <input type="text" id="prodDiscount" required placeholder="जैसे: 20% OFF या विशेष छूट" 
+                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-red-500">
+                    </div>
+                </div>
+
+                <!-- Gallery Image Selection -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">गैलरी से फोटो चुनें *</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex-1 cursor-pointer flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-700 rounded-xl hover:border-red-500 bg-slate-900/50 hover:bg-slate-900 transition">
+                            <i class="fa-solid fa-images text-red-400 text-2xl mb-1"></i>
+                            <span id="fileNameDisplay" class="text-xs text-slate-300 font-medium text-center">गैलरी से फोटो अपलोड करें</span>
+                            <span class="text-[10px] text-slate-500">JPG, PNG, WEBP (Auto Compressor System)</span>
+                            <input type="file" id="prodImage" accept="image/*" required class="hidden" onchange="previewAndCompressImage(this)">
+                        </label>
+
+                        <!-- Tiny Thumbnail Preview -->
+                        <div id="previewContainer" class="hidden w-20 h-20 rounded-xl border border-slate-700 overflow-hidden bg-slate-900 flex-shrink-0 relative">
+                            <img id="imagePreview" class="w-full h-full object-cover" src="" alt="Preview">
+                            <span class="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] text-amber-300 text-center py-0.5">Tiny Compress</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">विवरण (Description)</label>
+                    <textarea id="prodDesc" rows="2" placeholder="उत्पाद की खासियत (रजाई, गद्दा, डनलप, कम्बल, मशलन आदि का विवरण)..." 
+                              class="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-red-500"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-square-plus text-base"></i>
+                    <span>शोकेस में जोड़ें</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- ================= CARD DETAILS SECTION ================= -->
+        <section class="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-950 text-slate-200 rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-700">
+            <h3 class="text-lg font-bold font-hindi text-amber-400 border-b border-slate-700 pb-2.5 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-address-card text-red-500"></i>
+                दुकान की पूरी जानकारी (विजिटिंग कार्ड अनुसार)
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                <div class="space-y-2.5">
+                    <p class="flex items-start gap-2">
+                        <i class="fa-solid fa-store text-red-400 mt-1"></i>
+                        <span><strong class="text-white">दुकान:</strong> काश्मीरी रजाई एवं गद्दा सेन्टर</span>
+                    </p>
+                    <p class="flex items-start gap-2">
+                        <i class="fa-solid fa-user-tie text-amber-400 mt-1"></i>
+                        <span><strong class="text-white">प्रोप्राइटर:</strong> अली अख्तर</span>
+                    </p>
+                    <p class="flex items-start gap-2">
+                        <i class="fa-solid fa-phone text-emerald-400 mt-1"></i>
+                        <span><strong class="text-white">संपर्क नंबर:</strong> 9939055492, 6299978619</span>
+                    </p>
+                </div>
+
+                <div class="space-y-2.5">
+                    <p class="flex items-start gap-2">
+                        <i class="fa-solid fa-location-dot text-rose-400 mt-1"></i>
+                        <span><strong class="text-white">पता:</strong> मेन रोड हाई स्कूल के पास, पचरुखी (सिवान)</span>
+                    </p>
+                    <p class="flex items-start gap-2">
+                        <i class="fa-solid fa-map-pin text-sky-400 mt-1"></i>
+                        <span><strong class="text-white">GPS Coordinate:</strong> 26°09'42.01″N 84°24'51.45"E</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-slate-900/80 rounded-xl border border-slate-700 text-xs text-slate-300 font-hindi leading-relaxed">
+                <strong class="text-amber-300">विशेष नोट:</strong> हमारे यहाँ रजाई, गद्दा, डनलप गद्दा, मशलन, कुसुम, परदा, कम्बल, बेडसिट, मच्छरदानी, कभर इत्यादि उचित मूल्य पर उपलब्ध हैं।
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-xs text-slate-500 py-4 border-t border-slate-800">
+        <p>© काश्मीरी रजाई एवं गद्दा सेन्टर | पचरुखी, सिवान (बिहार)</p>
+    </footer>
+
+    <!-- ================= FULLSCREEN PINCH & ZOOM MODAL ================= -->
+    <div id="imageViewerModal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col justify-between items-center p-2 sm:p-4 touch-none">
+        <!-- Top Toolbar -->
+        <div class="w-full flex justify-between items-center z-10 px-2 py-2">
+            <div class="text-white text-xs sm:text-sm font-hindi">
+                <span id="modalTitle" class="font-bold text-amber-300"></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="resetZoom()" class="text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs border border-slate-600">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> रीसेट ज़ूम
+                </button>
+                <button onclick="closeImageViewer()" class="text-white bg-red-600 hover:bg-red-500 w-8 h-8 rounded-full flex items-center justify-center text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Zoomable Image Viewport -->
+        <div id="imageContainer" class="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+            <img id="zoomImage" src="" alt="Zoomable Product" class="max-w-full max-h-full object-contain cursor-grab">
+        </div>
+
+        <!-- Bottom Controls & Instruction Banner -->
+        <div class="w-full text-center z-10 pb-2">
+            <p class="text-[11px] text-slate-300 mb-2">
+                <i class="fa-solid fa-hand-pointer text-amber-400"></i> मोबाइल पर दो उंगलियों से पिंच (Pinch to Zoom) करें या डबल टैप करें।
+            </p>
+            <div class="flex justify-center gap-3">
+                <button onclick="changeZoom(0.3)" class="bg-slate-800 text-white w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center text-lg shadow">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                </button>
+                <button onclick="changeZoom(-0.3)" class="bg-slate-800 text-white w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center text-lg shadow">
+                    <i class="fa-solid fa-magnifying-glass-minus"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas element for hidden image compression processing -->
+    <canvas id="compressionCanvas" class="hidden"></canvas>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // Initial Products Data without Prices
+        let products = [
+            {
+                id: 1,
+                title: "काश्मीरी कॉटन डबल रजाई",
+                discount: "25% OFF",
+                image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=500&q=70",
+                description: "अत्यधिक गरम, प्रीमियम सॉफ्ट कॉटन फैब्रिक से बनी डबल रजाई।"
+            },
+            {
+                id: 2,
+                title: "डनलप गद्दा (Dunlop Mattress)",
+                discount: "विशेष छूट",
+                image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=500&q=70",
+                description: "कमर के लिए आरामदायक उच्च गुणवत्ता वाला डनलप फोम गद्दा।"
+            },
+            {
+                id: 3,
+                title: "कम्बल एवं मशलन सेट",
+                discount: "20% OFF",
+                image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=500&q=70",
+                description: "मुलायम विंटर कम्बल, मशलन और खूबसूरत कभर सेट।"
+            },
+            {
+                id: 4,
+                title: "कॉटन बेडशीट व पर्दा",
+                discount: "15% OFF",
+                image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=500&q=70",
+                description: "आकर्षक डिज़ाइनर प्रिंटेड बेडशीट व मच्छरदानी।"
+            }
+        ];
+
+        let compressedImageData = null;
+
+        // Render products in horizontal showcase scroll
+        function renderProducts() {
+            const container = document.getElementById('productContainer');
+            if (products.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 w-full">कोई उत्पाद उपलब्ध नहीं है।</div>`;
+                return;
+            }
+
+            container.innerHTML = products.map(product => {
+                const whatsappMessage = encodeURIComponent(`नमस्ते! मुझे "काश्मीरी रजाई एवं गद्दा सेन्टर" के इस उत्पाद की जानकारी चाहिए:\n\n*उत्पाद:* ${product.title}\n*ऑफर/छूट:* ${product.discount}\n*विवरण:* ${product.description || 'उपलब्ध है'}`);
+
+                return `
+                    <div class="snap-start flex-shrink-0 w-64 sm:w-72 bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden flex flex-col justify-between hover:border-slate-500 transition">
+                        <div>
+                            <!-- Compact Image Showcase with Zoom Trigger -->
+                            <div class="relative h-44 w-full bg-slate-900 overflow-hidden cursor-pointer group" onclick="openImageViewer('${product.image}', '${product.title.replace(/'/g, "\\'")}')">
+                                <img src="${product.image}" alt="${product.title}" 
+                                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                     onerror="this.src='https://placehold.co/400x300/1e293b/cbd5e1?text=No+Photo'">
+                                
+                                <!-- Discount Tag Badge -->
+                                <span class="absolute top-2 left-2 bg-red-600 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-md shadow-md">
+                                    ${product.discount}
+                                </span>
+
+                                <!-- Zoom Overlay Icon -->
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white gap-1 text-xs font-semibold">
+                                    <i class="fa-solid fa-magnifying-glass-plus text-base"></i> Zoom Photo
+                                </div>
+
+                                <!-- Delete Button -->
+                                <button onclick="event.stopPropagation(); deleteProduct(${product.id})" title="डिलीट करें" 
+                                        class="absolute top-2 right-2 bg-slate-900/80 hover:bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center transition backdrop-blur-sm border border-slate-600">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Product Text Details (No Price) -->
+                            <div class="p-3.5">
+                                <h3 class="font-bold text-white text-sm sm:text-base line-clamp-1 font-hindi">${product.title}</h3>
+                                <p class="text-xs text-slate-300 line-clamp-2 mt-1.5 min-h-[32px] font-hindi leading-relaxed">${product.description || 'उच्च गुणवत्ता वाला सामान।'}</p>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp Action Button -->
+                        <div class="p-3.5 pt-0">
+                            <a href="https://wa.me/919939055492?text=${whatsappMessage}" target="_blank" 
+                               class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>व्हाट्सएप पर जानकारी लें</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle Banner Discount Editor Panel
+        function toggleDiscountEditor() {
+            const panel = document.getElementById('discountEditorPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Update Banner Text
+        function updateBannerText() {
+            const inputVal = document.getElementById('bannerInput').value.trim();
+            if (inputVal) {
+                document.getElementById('bannerText').innerText = inputVal;
+                toggleDiscountEditor();
+            }
+        }
+
+        // Compress uploaded image from gallery using Canvas
+        function previewAndCompressImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('fileNameDisplay').innerText = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('compressionCanvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Max width 450px for tiny size
+                    const maxWidth = 450;
+                    const scaleFactor = maxWidth / img.width;
+                    const width = maxWidth;
+                    const height = img.height * scaleFactor;
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress JPEG
+                    compressedImageData = canvas.toDataURL('image/jpeg', 0.75);
+
+                    // Show thumbnail preview
+                    const previewImg = document.getElementById('imagePreview');
+                    previewImg.src = compressedImageData;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Add Product Form Submission
+        function handleProductSubmit(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('prodTitle').value.trim();
+            const discount = document.getElementById('prodDiscount').value.trim();
+            const description = document.getElementById('prodDesc').value.trim();
+
+            if (!compressedImageData) {
+                alert('कृपया गैलरी से फोटो अपलोड करें!');
+                return;
+            }
+
+            const newProduct = {
+                id: Date.now(),
+                title,
+                discount,
+                image: compressedImageData,
+                description
+            };
+
+            products.unshift(newProduct);
+            renderProducts();
+
+            // Reset form
+            document.getElementById('productForm').reset();
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('fileNameDisplay').innerText = 'गैलरी से फोटो अपलोड करें';
+            compressedImageData = null;
+
+            // Scroll to start
+            const container = document.getElementById('productContainer');
+            container.scrollLeft = 0;
+        }
+
+        // Delete Product
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            renderProducts();
+        }
+
+        function scrollToUpload() {
+            document.getElementById('uploadSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /* ================= FULLSCREEN PINCH & ZOOM LOGIC ================= */
+        let currentScale = 1;
+        let startDistance = 0;
+        let initialScale = 1;
+        let posX = 0, posY = 0;
+        let startX = 0, startY = 0;
+        let isDragging = false;
+        let lastTap = 0;
+
+        const zoomImg = document.getElementById('zoomImage');
+        const imgContainer = document.getElementById('imageContainer');
+
+        function openImageViewer(imageSrc, title) {
+            zoomImg.src = imageSrc;
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('imageViewerModal').classList.remove('hidden');
+            resetZoom();
+        }
+
+        function closeImageViewer() {
+            document.getElementById('imageViewerModal').classList.add('hidden');
+        }
+
+        function updateTransform() {
+            zoomImg.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        }
+
+        function resetZoom() {
+            currentScale = 1;
+            posX = 0;
+            posY = 0;
+            updateTransform();
+        }
+
+        function changeZoom(delta) {
+            currentScale = Math.min(Math.max(1, currentScale + delta), 4);
+            if (currentScale === 1) { posX = 0; posY = 0; }
+            updateTransform();
+        }
+
+        // Touch event handlers for Pinch-to-Zoom & Drag Pan
+        zoomImg.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                // Pinch start
+                startDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialScale = currentScale;
+            } else if (e.touches.length === 1) {
+                // Double tap handling
+                const now = new Date().getTime();
+                if (now - lastTap < 300) {
+                    if (currentScale > 1) { resetZoom(); } else { currentScale = 2.5; updateTransform(); }
+                }
+                lastTap = now;
+
+                if (currentScale > 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - posX;
+                    startY = e.touches[0].clientY - posY;
+                }
+            }
+        });
+
+        zoomImg.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                // Pinch zoom move
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (startDistance > 0) {
+                    currentScale = Math.min(Math.max(1, initialScale * (dist / startDistance)), 4);
+                    updateTransform();
+                }
+            } else if (e.touches.length === 1 && isDragging && currentScale > 1) {
+                // Drag pan
+                posX = e.touches[0].clientX - startX;
+                posY = e.touches[0].clientY - startY;
+                updateTransform();
+            }
+        });
+
+        zoomImg.addEventListener('touchend', function(e) {
+            isDragging = false;
+        });
+
+        // Mouse Drag Support for Desktop
+        zoomImg.addEventListener('mousedown', function(e) {
+            if (currentScale > 1) {
+                isDragging = true;
+                startX = e.clientX - posX;
+                startY = e.clientY - posY;
+                zoomImg.style.cursor = 'grabbing';
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (isDragging && currentScale > 1) {
+                posX = e.clientX - startX;
+                posY = e.clientY - startY;
+                updateTransform();
+            }
+        });
+
+        window.addEventListener('mouseup', function() {
+            isDragging = false;
+            zoomImg.style.cursor = 'grab';
+        });
+
+        // Initial Load
+        window.onload = function() {
+            renderProducts();
+        };
+    </script>
+</body>
+</html>
