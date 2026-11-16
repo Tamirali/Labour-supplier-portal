@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamir Global Showcase - लाइव कैटलॉग</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; margin: 0; padding: 0; color: #333; }
+        header { background: #0f172a; color: white; text-align: center; padding: 30px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        header h1 { margin: 0; font-size: 30px; color: #38bdf8; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; color: #94a3b8; font-size: 16px; }
+
+        /* ग्रिड लेआउट - दुनिया के हर मोबाइल और लैपटॉप पर सुंदर दिखने के लिए */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card img { width: 100%; height: 240px; object-fit: cover; background: #e2e8f0; }
+        
+        .card-body { padding: 18px; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 6px; color: #0f172a; }
+        .price { font-size: 16px; color: #16a34a; font-weight: bold; margin-bottom: 8px; }
+        .description { font-size: 14px; color: #475569; line-height: 1.4; margin-bottom: 15px; }
+        
+        .btn-whatsapp { display: block; text-align: center; background: #22c55e; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin: 15px; transition: background 0.2s; }
+        .btn-whatsapp:hover { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+    <!-- शोकेस का नाम जिसे आप कभी भी बदल सकते हैं -->
+    <header>
+        <h1 id="mainTitle">Tamir Global Showcase</h1>
+        <p>सभी के लिए लाइव डिजिटल प्रोडक्ट्स और फोटो संग्रह</p>
+    </header>
+
+    <div class="container" id="productContainer">
+        <!-- प्रोडक्ट्स जावास्क्रिप्ट द्वारा यहाँ लोड होंगे -->
+    </div>
+
+    <script>
+        // =========================================================================
+        // यहाँ आप जितने चाहें उतने प्रोडक्ट्स जोड़ सकते हैं। 
+        // 'image' की जगह अपना लंबा Base64 फोटो कोड पेस्ट कर दीजिए!
+        // =========================================================================
+        const globalProducts = [
+            {
+                name: "उत्पाद / आइटम 1",
+                price: "₹1,500",
+                description: "यह आपके पहले प्रोडक्ट का विवरण है।",
+                image: "यहाँ_अपना_पहला_Base64_फोटो_कोड_पेस्ट_करें"
+            },
+            {
+                name: "उत्पाद / आइटम 2",
+                price: "₹2,800",
+                description: "यह आपके दूसरे प्रोडक्ट का विवरण है।",
+                image: "यहाँ_अपना_दूसरा_Base64_फोटो_कोड_पेस्ट_करें"
+            },
+            {
+                name: "उत्पाद / आइटम 3",
+                price: "₹3,500",
+                description: "यह आपके तीसरे प्रोडक्ट का विवरण है।",
+                image: "यहाँ_अपना_तीसरा_Base64_फोटो_कोड_पेस्ट_करें"
+            }
+            // आप चाहें तो कॉमा (,) लगाकर ऐसे ही और भी हजारों आइटम जोड़ सकते हैं
+        ];
+
+        const container = document.getElementById('productContainer');
+
+        // कोडिंग के जरिए सभी प्रोडक्ट्स को दुनिया के सामने स्क्रीन पर सजाना
+        globalProducts.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div>
+                    <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x240?text=Photo+Code+Missing'">
+                    <div class="card-body">
+                        <div class="title">${p.name}</div>
+                        <div class="price">${p.price}</div>
+                        <div class="description">${p.description}</div>
+                    </div>
+                </div>
+                <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent('नमस्ते, मुझे इस प्रोडक्ट के बारे में जानकारी चाहिए: ' + p.name + ' (' + p.price + ')')}" target="_blank">
+                    💬 WhatsApp पर आर्डर करें
+                </a>
+            `;
+            container.appendChild(card);
+        });
+    </script>
+
+</body>
+</html>
