@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamir Showcase - डिजिटल कैटलॉग</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; margin: 0; padding: 0; color: #333; }
+        header { background: #1e293b; color: white; text-align: center; padding: 25px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; color: #38bdf8; }
+        header p { margin: 8px 0 0 0; color: #cbd5e1; font-size: 15px; }
+        
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card img { width: 100%; height: 240px; object-fit: cover; background: #e2e8f0; }
+        
+        .card-body { padding: 18px; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #0f172a; }
+        .price { font-size: 16px; color: #16a34a; font-weight: bold; margin-bottom: 10px; }
+        .description { font-size: 14px; color: #475569; line-height: 1.5; margin-bottom: 15px; }
+        
+        .btn-whatsapp { display: block; text-align: center; background: #22c55e; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin: 15px; transition: background 0.2s; }
+        .btn-whatsapp:hover { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+    <!-- शोकेस का मुख्य नाम (जिसे आप कभी भी बदल सकते हैं) -->
+    <header>
+        <h1 id="showcaseTitle">Tamir Showcase</h1>
+        <p>विशेष उत्पादों और डिजिटल संग्रह का सुंदर प्रदर्शन</p>
+    </header>
+
+    <div class="container" id="productContainer">
+        <!-- प्रोडक्ट्स यहाँ जावास्क्रिप्ट द्वारा लोड होंगे -->
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ आप अपने प्रोडक्ट्स के नाम, विवरण और 
+        // फोटो की जगह अपना Base64 कोड पेस्ट कर सकते हैं!
+        // ==========================================
+        const showcaseData = [
+            {
+                name: "उत्पाद / आइटम 1",
+                price: "₹1,500",
+                description: "यहाँ अपने पहले प्रोडक्ट या फोटो के बारे में पूरी जानकारी (विवरण) लिखें।",
+                image: "यहां_अपना_Base64_कोड_पेस्ट_करें_या_इमेज_लिंक_दें"
+            },
+            {
+                name: "उत्पाद / आइटम 2",
+                price: "₹2,800",
+                description: "यहाँ अपने दूसरे प्रोडक्ट या फोटो के बारे में विवरण लिखें।",
+                image: "यहां_अपना_Base64_कोड_पेस्ट_करें_या_इमेज_लिंक_दें"
+            },
+            {
+                name: "उत्पाद / आइटम 3",
+                price: "₹3,500",
+                description: "यहाँ अपने तीसरे प्रोडक्ट या फोटो के बारे में विवरण लिखें।",
+                image: "यहां_अपना_Base64_कोड_पेस्ट_करें_या_इमेज_लिंक_दें"
+            }
+        ];
+
+        const container = document.getElementById('productContainer');
+
+        // प्रोडक्ट्स को स्क्रीन पर रेंडर करने का कोड
+        showcaseData.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div>
+                    <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x240?text=Image+Placeholder'">
+                    <div class="card-body">
+                        <div class="title">${p.name}</div>
+                        <div class="price">${p.price}</div>
+                        <div class="description">${p.description}</div>
+                    </div>
+                </div>
+                <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent('नमस्ते, मुझे इस प्रोडक्ट के बारे में जानकारी चाहिए: ' + p.name + ' (' + p.price + ')')}" target="_blank">
+                    💬 WhatsApp पर आर्डर करें
+                </a>
+            `;
+            container.appendChild(card);
+        });
+    </script>
+
+</body>
+</html>
