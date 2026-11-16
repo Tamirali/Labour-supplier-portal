@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>तमीर अली - फिक्स फोटो प्रोजेक्ट जनरेटर</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f7; padding: 15px; text-align: center; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input { width: 90%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #2c3e50; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 95%; }
+        .download-btn { background: #27ae60; font-size: 16px; margin-top: 20px; }
+        .list { text-align: left; margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>🛠️ फिक्स फोटो प्रोजेक्ट मेकर</h2>
+    <p>अपनी 6 फोटो चुनें, यह टूल उन्हें कंप्रेस करके एक पक्की HTML फाइल बना देगा जो हर मोबाइल में दिखेगी!</p>
+    
+    <input type="text" id="pName" placeholder="प्रोडक्ट/फोटो का नाम लिखें"><br>
+    <input type="file" id="pImg" accept="image/*"><br>
+    <button onclick="addItem()">+ लिस्ट में जोड़ें</button>
+
+    <div class="list" id="itemList"></div>
+
+    <button class="download-btn" onclick="downloadFinalHTML()">📥 पक्की HTML फाइल डाउनलोड करें</button>
+</div>
+
+<script>
+    let fixedProducts = [];
+
+    function addItem() {
+        const name = document.getElementById('pName').value;
+        const file = document.getElementById('pImg').files[0];
+
+        if (!name || !file) {
+            alert("कृपया नाम और फोटो दोनों चुनें!");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                // फोटो को हल्का कंप्रेस करना ताकि फाइल भारी न हो
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 400;
+                const scale = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                const compressedCode = canvas.toDataURL('image/jpeg', 0.7);
+                fixedProducts.push({ name: name, image: compressedCode });
+
+                document.getElementById('itemList').innerHTML += `<p>✅ जोड़ा गया: <b>${name}</b></p>`;
+                document.getElementById('pName').value = '';
+                document.getElementById('pImg').value = '';
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function downloadFinalHTML() {
+        if (fixedProducts.length === 0) {
+            alert("पहले कम से कम 1 फोटो जोड़ें!");
+            return;
+        }
+
+        // एक नई स्वतंत्र HTML फाइल तैयार करना जिसमें सारी फोटो कोड के अंदर फिक्स हों
+        const finalCode = `<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>तमीर अली - डिजिटल शोकेस</title>
+<style>
+    body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 15px; }
+    header { background: #1a252f; color: white; text-align: center; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+    .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; padding-bottom: 15px; }
+    .card img { width: 100%; height: 240px; object-fit: cover; }
+    .title { font-size: 18px; font-weight: bold; margin: 12px 0; color: #333; }
+    .btn { display: inline-block; background: #25d366; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+</style>
+</head>
+<body>
+<header><h1>🌟 तमीर अली - डिजिटल शोकेस</h1></header>
+<div class="grid">
+${fixedProducts.map(p => `
+    <div class="card">
+        <img src="${p.image}">
+        <div class="title">${p.name}</div>
+        <a class="btn" href="https://wa.me/?text=${encodeURIComponent(p.name)}" target="_blank">💬 WhatsApp पर संपर्क करें</a>
+    </div>
+`).join('')}
+</div>
+</body>
+</html>`;
+
+        // फाइल डाउनलोड कराना
+        const blob = new Blob([finalCode], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'My-Fixed-Showcase.html';
+        link.click();
+    }
+</script>
+
+</body>
+</html>
