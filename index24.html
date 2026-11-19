@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>इंसान की स्वभावगत कमज़ोरियाँ · जल्दबाज़ी और लालच</title>
+  <!-- Fonts for Hindi and Urdu -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f7f3ed;
+      background-image: radial-gradient(circle at 10% 20%, rgba(230, 215, 195, 0.3) 0%, transparent 30%),
+                        radial-gradient(circle at 90% 80%, rgba(200, 180, 150, 0.2) 0%, transparent 40%);
+      font-family: 'Noto Sans Devanagari', 'Noto Nastaliq Urdu', 'Segoe UI', system-ui, sans-serif;
+      padding: 1.5rem 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #1e2b2f;
+    }
+
+    .main-container {
+      max-width: 880px;
+      width: 100%;
+      background: rgba(255, 252, 245, 0.9);
+      backdrop-filter: blur(6px);
+      border-radius: 2.5rem 2.5rem 2rem 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 240, 0.8);
+      padding: 2.2rem 1.8rem 2rem;
+      border: 1px solid #e7dcd0;
+    }
+
+    @media (max-width: 600px) {
+      .main-container {
+        padding: 1.6rem 1rem 1.5rem;
+        border-radius: 2rem;
+      }
+    }
+
+    /* Audio player section */
+    .audio-section {
+      background: #f2ebe2;
+      border-radius: 4rem;
+      padding: 0.9rem 1.4rem;
+      margin-bottom: 2.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: inset 0 2px 6px rgba(200, 170, 140, 0.2), 0 6px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #dbcfc0;
+    }
+
+    .audio-icon {
+      background: #2b5e4b;
+      color: #fefcf7;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 6px 12px rgba(43, 94, 75, 0.3);
+      flex-shrink: 0;
+    }
+
+    .audio-player {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .audio-player audio {
+      width: 100%;
+      height: 48px;
+      border-radius: 30px;
+      background: #e5dbcf;
+      outline: none;
+    }
+
+    .audio-label {
+      font-size: 0.8rem;
+      color: #594e42;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      margin-left: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .audio-label span {
+      background: #2b5e4b20;
+      padding: 0.1rem 0.6rem;
+      border-radius: 20px;
+      color: #2b5e4b;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #1d3b35;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.02em;
+      padding-bottom: 0.4rem;
+      border-bottom: 3px dashed #cbb9a6;
+      text-shadow: 0 1px 2px rgba(255, 255, 240, 0.8);
+    }
+
+    .subhead {
+      font-size: 1.1rem;
+      color: #4f5e58;
+      margin-bottom: 2rem;
+      font-weight: 400;
+      line-height: 1.6;
+      background: #efe8df;
+      padding: 0.8rem 1.3rem;
+      border-radius: 2rem;
+      border-right: 5px solid #2b5e4b;
+    }
+
+    .section-card {
+      background: #ffffffd9;
+      border-radius: 2rem;
+      padding: 1.6rem 1.6rem 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 20px -10px rgba(80, 60, 40, 0.15);
+      border: 1px solid #e3d7cb;
+    }
+
+    .section-card h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #16302b;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid #dacfc2;
+    }
+
+    .section-card h2 .num-badge {
+      background: #2b5e4b;
+      color: #faf7f2;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      box-shadow: 0 4px 8px rgba(43, 94, 75, 0.3);
+      flex-shrink: 0;
+    }
+
+    .ayah {
+      background: #eae2d7;
+      padding: 1.2rem 1.5rem;
+      border-radius: 1.5rem;
+      margin: 1.4rem 0;
+      border-left: 8px solid #2b5e4b;
+      line-height: 1.8;
+      font-size: 1.15rem;
+      color: #1d2c27;
+      box-shadow: inset 0 1px 6px rgba(180, 150, 120, 0.1);
+      font-weight: 500;
+    }
+
+    .ayah-ref {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2b5e4b;
+      margin-top: 0.8rem;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      background: #ffffffb3;
+      padding: 0.2rem 1rem;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .explain {
+      background: #f9f6f1;
+      padding: 1.2rem 1.5rem;
+      border-radius: 1.5rem;
+      margin-top: 1rem;
+      border: 1px solid #dfd3c6;
+    }
+
+    .explain p {
+      margin-bottom: 0.8rem;
+      line-height: 1.7;
+      font-size: 1rem;
+      color: #2e3e38;
+    }
+
+    .explain strong {
+      color: #1d3b35;
+      font-weight: 700;
+    }
+
+    .conclusion {
+      background: #1d3b35;
+      color: #f5efe7;
+      padding: 2rem 1.8rem;
+      border-radius: 2rem;
+      margin-top: 2.2rem;
+      box-shadow: 0 18px 30px -12px rgba(20, 50, 40, 0.4);
+      border: 1px solid #3e6b5c;
+    }
+
+    .conclusion h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #f0e7dc;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .conclusion p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      opacity: 0.95;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+
+    <!-- Audio Player Section -->
+    <div class="audio-section">
+      <div class="audio-icon" aria-hidden="true">🎧</div>
+      <div class="audio-player">
+        <!-- Yahan apni audio file ka naam daalein. Agar file HTML ke sath usi folder mein hai toh aise likhein: src="audio.mp3" -->
+        <audio controls preload="metadata" src="audio.mp3">
+          Aapka browser audio play nahi kar sakta.
+        </audio>
+        <div class="audio-label">ऑडियो सुनें <span>Hindi / Urdu</span></div>
+      </div>
+    </div>
+
+    <h1>इंसान की स्वभावगत कमज़ोरियाँ</h1>
+    <div class="subhead">
+      जल्दबाज़ी (हड़बड़ी) और ख़्वाहिशों/लालच में अंधा हो जाना—पर क़ुरआन मजीद में बहुत गहरी और स्पष्ट आयतें मौजूद हैं।
+    </div>
+
+    <!-- Section 1 -->
+    <div class="section-card">
+      <h2><span class="num-badge">1</span> इंसान का जल्दबाज़ होना</h2>
+      <p style="line-height: 1.7; margin-bottom: 1rem; color: #2e3e38;">
+        क़ुरआन बताता है कि जल्दबाज़ी इंसान की प्रकृति में रची-बसी है, जिसकी वजह से वह अक्सर दूर की हक़ीक़त या सही फ़ैसले से चूक जाता है।
+      </p>
+
+      <div class="ayah">
+        "और इंसान भलाई की तरह बुराई की भी जल्दी मचाता है; और इंसान बड़ा ही जल्दबाज़ है।"
+        <span class="ayah-ref">सूरह अल-इसरा (17:11)</span>
+      </div>
+
+      <div class="ayah">
+        "इंसान जल्दबाज़ी से बनाया गया है; मैं जल्द ही तुम्हें अपनी निशानियाँ दिखाऊँगा, तो तुम मुझसे जल्दी न मचाओ।"
+        <span class="ayah-ref">सूरह अल-अंबिया (21:37)</span>
+      </div>
+
+      <div class="explain">
+        <p><strong>तुरंत नतीजे की भूख:</strong> इंसान अक्सर सब्र नहीं कर पाता। जब उसे कोई चीज़ तुरंत चाहिए होती है या कोई परेशानी आती है, तो वह बिना सोचे-समझे क़दम उठा लेता है। कई बार ग़ुस्से या हड़बड़ी में वह अपने ही नुक़सान की दुआ या फ़ैसला कर बैठता है।</p>
+        <p><strong>अक़्ल की कमी और सब्र की ज़रूरत:</strong> जल्दबाज़ी इंसान की अक़्ल को धुंधला कर देती है। जीवन के बड़े फ़ैसले, रिश्तों की संभाल और सच्चाई की पहचान धैर्य और गहराई से सोचने पर ही होती है। क़ुरआन इंसान को चेताता है कि हर चीज़ का एक वक़्त और क़ानून मुक़र्रर है, इसलिए हड़बड़ी के बजाय समझदारी से काम लेना ही अक़्ल की जीत है।</p>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="section-card">
+      <h2><span class="num-badge">2</span> ख़्वाहिशों और लालच में अंधा हो जाना</h2>
+      <p style="line-height: 1.7; margin-bottom: 1rem; color: #2e3e38;">
+        जब इंसान की इच्छाएँ (नफ़्स की ख़्वाहिशें) और ज़्यादा पाने की होड़ उसकी सोच पर हावी हो जाती है, तो उसकी आँखों और दिल की समझ पर पर्दा पड़ जाता है।
+      </p>
+
+      <div class="ayah">
+        "ज़्यादा से ज़्यादा (माल, औलाद या शान-ओ-शौकत) पाने की होड़ ने तुम्हें ग़ाफ़िल (बेख़बर) कर रखा है, यहाँ तक कि तुम क़ब्रों में जा पहुँचो।"
+        <span class="ayah-ref">सूरह अत-तकासुर (102:1–2)</span>
+      </div>
+
+      <div class="ayah">
+        "तो क्या तुमने उस शख़्स को देखा जिसने अपनी ख़्वाहिश को अपना इलाह (पूज्य/बड़ा) बना लिया, और अल्लाह ने जानते-बूझते उसे गुमराह छोड़ दिया और उसके कान और दिल पर मुहर लगा दी और उसकी आँखों पर पर्दा डाल दिया?"
+        <span class="ayah-ref">सूरह अल-जासिया (45:23)</span>
+      </div>
+
+      <div class="ayah">
+        "और अगर वे तुम्हारी बात न मानें, तो जान लो कि वे सिर्फ़ अपनी ख़्वाहिशों के पीछे चल रहे हैं; और उससे बढ़कर गुमराह कौन होगा जो अल्लाह की हिदायत के बिना अपनी ख़्वाहिश के पीछे चले?"
+        <span class="ayah-ref">सूरह अल-क़सस (28:50)</span>
+      </div>
+
+      <div class="explain">
+        <p><strong>ख़्वाहिश को 'रब' बना लेना:</strong> जब कोई इंसान अपनी इच्छा, लालच या पसंद को हर चीज़ से ऊपर रख लेता है—चाहे वह सच के ख़िलाफ़ ही क्यों न हो—तो वह एक तरह से अपनी ख़्वाहिश को ही अपना माबूद बना बैठता है। ऐसे में वह सही-ग़लत, हलाल-हराम और भलाई-बुराई का फ़र्क़ नहीं देख पाता।</p>
+        <p><strong>दिल और आँखों पर पर्दा:</strong> अत्यधिक लालच और भौतिक इच्छाएँ इंसान को इतना अंधा कर देती हैं कि उसे सामने दिख रही सच्चाई भी नज़र नहीं आती। वह "और ज़्यादा, और ज़्यादा" की दौड़ में अपनी ज़िंदगी का असली मक़सद, अपने रब की तौहीद और आख़िरत की जवाबदेही को भूल जाता है, जब तक कि मौत या वक़्त का तकाज़ा सामने न आ जाए।</p>
+        <p><strong>आधुनिक भटकाव और आत्म-नियंत्रण:</strong> आज की तेज़ दुनिया और दिखावे की चीज़ें इंसान की ख़्वाहिशों को और भड़काती हैं। जो इंसान अपनी अक़्ल से काम लेता है, ख़्वाहिशों को क़ाबू में रखता है और अपने वक़्त व ध्यान को संभालता है, वही इस अंधेपन से बच सकता है।</p>
+      </div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="conclusion">
+      <h3>निचोड़</h3>
+      <p>
+        जल्दबाज़ी इंसान को सोचने का वक़्त नहीं देती और ख़्वाहिशों का अंधापन उसे देखने की नज़र छीन लेता है। क़ुरआन का संदेश यही है कि इंसान अपनी अक़्ल को जगाए, अपनी ख़्वाहिशों को सही सीमा में रखे, जल्दबाज़ी छोड़कर धैर्य अपनाए और उस एक ख़ालिक़ (सच्चे रब) की पहचान करे जिसने उसे पैदा किया है और जिसके सामने उसे अपने हर अमल का हिसाब देना है।
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
