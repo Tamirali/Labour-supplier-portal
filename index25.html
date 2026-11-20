@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>True Merged Motion Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f3f5f8;
+      color: #1f2937;
+    }
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 21px;
+      font-weight: 800;
+      margin: 6px 0 14px;
+      color: #111827;
+    }
+    .upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px;
+      background: #ffffff;
+      border: 2px dashed #3b82f6;
+      border-radius: 12px;
+      color: #2563eb;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      user-select: none;
+    }
+    .upload-label:active {
+      background: #eff6ff;
+    }
+    #fileInput {
+      display: none;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 12px;
+    }
+    .control-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .toggle-btn {
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1.5px solid #d1d5db;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .toggle-btn.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+    .slider-group {
+      margin-top: 8px;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      background: #111827;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: crosshair;
+    }
+    .pinch-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 24, 39, 0.75);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0.9;
+      transition: opacity 0.3s;
+    }
+    .pinch-hint.hidden {
+      opacity: 0;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .action-btn {
+      padding: 11px 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .action-btn:active {
+      opacity: 0.8;
+    }
+    .btn-single {
+      background: #059669;
+    }
+    .btn-merge {
+      background: #2563eb;
+    }
+    .btn-preview {
+      background: #4b5563;
+    }
+    .btn-clear {
+      background: #dc2626;
+    }
+    .btn-add {
+      background: #f59e0b;
+      grid-column: span 2;
+    }
+    .status-bar {
+      margin-top: 10px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4b5563;
+      border: 1px solid #e5e7eb;
+    }
+    .saved-list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .saved-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .del-small {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .del-small:active {
+      background: #fecaca;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <h1>True Merged Motion Portal</h1>
+
+    <label for="fileInput" class="upload-label">
+      📁 गैलरी से फोटो चुनें
+    </label>
+    <input type="file" id="fileInput" accept="image/*" />
+
+    <div class="card">
+      <div class="control-label"><span>🔲 आकार (Shape):</span></div>
+      <div class="btn-row">
+        <button type="button" class="toggle-btn" id="btnSquare">Square (चौकोर)</button>
+        <button type="button" class="toggle-btn active" id="btnRound">Round (गोल)</button>
+      </div>
+
+      <div class="control-label"><span>🧭 दिशा (Direction):</span></div>
+      <div class="btn-row">
+        <button type="button" class="toggle-btn active" id="btnUpDown">ऊपर-नीचे (Up-Down)</button>
+        <button type="button" class="toggle-btn" id="btnLeftRight">बाएँ-दाएँ (Left-Right)</button>
+      </div>
+
+      <div class="slider-group">
+        <div class="control-label">
+          <span>🔴 मोशन का साइज़:</span>
+          <span id="sizeVal" style="color:#2563eb;">55px</span>
+        </div>
+        <input type="range" id="sizeSlider" min="15" max="150" value="55" />
+      </div>
+
+      <div class="slider-group">
+        <div class="control-label">
+          <span>⏱️ एक समान मोशन टाइम (सबका एक साथ):</span>
+          <span id="timeVal" style="color:#2563eb;">1.6s</span>
+        </div>
+        <input type="range" id="timeSlider" min="5" max="40" value="16" />
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="motionCanvas"></canvas>
+      <div class="pinch-hint" id="pinchHint">✌️ सिलेक्टेड पॉइंट पर 2-फिंगर पिंच करके साइज़ बदलें</div>
+    </div>
+
+    <div class="action-grid">
+      <button type="button" class="action-btn btn-add" id="btnAddMode">➕ नया मोशन पॉइंट जोड़ें (Move Mode)</button>
+      <button type="button" class="action-btn btn-single" id="btnSingleSave">💾 सिंगल मोशन सेव</button>
+      <button type="button" class="action-btn btn-merge" id="btnMergeSave">🔗 सेव &amp; मर्ज करें</button>
+      <button type="button" class="action-btn btn-preview" id="btnToggleGuides">👁️ गाइड छुपाएँ</button>
+      <button type="button" class="action-btn btn-clear" id="btnClearAll">🗑️ सब हटाएँ</button>
+    </div>
+
+    <div class="status-bar" id="statusText">
+      फोटो पर टच करके पॉइंट बनाएँ — फिर ड्रैग करके कहीं भी ले जाएँ!
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <div class="control-label"><span>📌 सेव किए गए मोशन पॉइंट्स (<span id="countText">0</span>)</span></div>
+      <div class="saved-list" id="savedList"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const canvas = document.getElementById("motionCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const fileInput = document.getElementById("fileInput");
+      const btnSquare = document.getElementById("btnSquare");
+      const btnRound = document.getElementById("btnRound");
+      const btnUpDown = document.getElementById("btnUpDown");
+      const btnLeftRight = document.getElementById("btnLeftRight");
+      const sizeSlider = document.getElementById("sizeSlider");
+      const sizeVal = document.getElementById("sizeVal");
+      const timeSlider = document.getElementById("timeSlider");
+      const timeVal = document.getElementById("timeVal");
+      const btnSingleSave = document.getElementById("btnSingleSave");
+      const btnMergeSave = document.getElementById("btnMergeSave");
+      const btnToggleGuides = document.getElementById("btnToggleGuides");
+      const btnClearAll = document.getElementById("btnClearAll");
+      const btnAddMode = document.getElementById("btnAddMode");
+      const statusText = document.getElementById("statusText");
+      const savedList = document.getElementById("savedList");
+      const countText = document.getElementById("countText");
+      const pinchHint = document.getElementById("pinchHint");
+
+      let currentShape = "round";
+      let currentDir = "updown";
+      let currentSize = 55;
+      let cycleSeconds = 1.6;
+      let showGuides = true;
+
+      let points = [];
+      let selectedId = null;
+
+      // Mode: "add" = tapping empty creates a point, "move" = dragging moves
+      let mode = "move";
+
+      const baseImg = new Image();
+      const MIN_SIZE = 15;
+      const MAX_SIZE = 150;
+
+      // ---------------------------------------------------------------
+      // Demo image
+      // ---------------------------------------------------------------
+      function createDefaultDemoImage() {
+        const temp = document.createElement("canvas");
+        temp.width = 600;
+        temp.height = 600;
+        const tctx = temp.getContext("2d");
+
+        const grad = tctx.createLinearGradient(0, 0, 600, 600);
+        grad.addColorStop(0, "#1e3a8a");
+        grad.addColorStop(0.5, "#2563eb");
+        grad.addColorStop(1, "#0f172a");
+        tctx.fillStyle = grad;
+        tctx.fillRect(0, 0, 600, 600);
+
+        tctx.fillStyle = "rgba(255,255,255,0.12)";
+        for (let i = 0; i < 6; i++) {
+          tctx.beginPath();
+          tctx.arc(100 + i * 85, 340 + (i % 2) * 40, 55, 0, Math.PI * 2);
+          tctx.fill();
+        }
+
+        tctx.fillStyle = "#facc15";
+        tctx.beginPath();
+        tctx.arc(300, 290, 75, 0, Math.PI * 2);
+        tctx.fill();
+
+        tctx.fillStyle = "#ffffff";
+        tctx.font = "bold 30px sans-serif";
+        tctx.textAlign = "center";
+        tctx.fillText("True Merged Motion Portal", 300, 110);
+        tctx.font = "20px sans-serif";
+        tctx.fillStyle = "#dbeafe";
+        tctx.fillText("गैलरी से फोटो चुनें या नीचे टच करें", 300, 155);
+
+        canvas.width = 600;
+        canvas.height = 600;
+        baseImg.src = temp.toDataURL("image/png");
+        baseImg.onload = function () {
+          if (points.length === 0) addPoint(300, 290);
+        };
+      }
+
+      // ---------------------------------------------------------------
+      // Gallery upload
+      // ---------------------------------------------------------------
+      fileInput.addEventListener("change", function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const img = new Image();
+          img.onload = function () {
+            const maxDim = 900;
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const resizer = document.createElement("canvas");
+            resizer.width = w;
+            resizer.height = h;
+            resizer.getContext("2d").drawImage(img, 0, 0, w, h);
+
+            canvas.width = w;
+            canvas.height = h;
+            baseImg.src = resizer.toDataURL("image/jpeg", 0.92);
+            baseImg.onload = function () {
+              points = [];
+              selectedId = null;
+              renderSavedList();
+              statusText.textContent = "फोटो लोड हो गई! अब फोटो पर टच करके मोशन पॉइंट बनाएँ।";
+            };
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+        fileInput.value = "";
+      });
+
+      // ---------------------------------------------------------------
+      // Shape & Direction
+      // ---------------------------------------------------------------
+      btnSquare.addEventListener("click", function () {
+        currentShape = "square";
+        btnSquare.classList.add("active");
+        btnRound.classList.remove("active");
+        updateSelectedProps();
+      });
+
+      btnRound.addEventListener("click", function () {
+        currentShape = "round";
+        btnRound.classList.add("active");
+        btnSquare.classList.remove("active");
+        updateSelectedProps();
+      });
+
+      btnUpDown.addEventListener("click", function () {
+        currentDir = "updown";
+        btnUpDown.classList.add("active");
+        btnLeftRight.classList.remove("active");
+        updateSelectedProps();
+      });
+
+      btnLeftRight.addEventListener("click", function () {
+        currentDir = "leftright";
+        btnLeftRight.classList.add("active");
+        btnUpDown.classList.remove("active");
+        updateSelectedProps();
+      });
+
+      sizeSlider.addEventListener("input", function () {
+        currentSize = parseInt(sizeSlider.value, 10);
+        sizeVal.textContent = currentSize + "px";
+        updateSelectedProps();
+      });
+
+      timeSlider.addEventListener("input", function () {
+        cycleSeconds = parseInt(timeSlider.value, 10) / 10;
+        timeVal.textContent = cycleSeconds.toFixed(1) + "s";
+      });
+
+      function updateSelectedProps() {
+        if (!selectedId) return;
+        const pt = points.find((p) => p.id === selectedId);
+        if (pt && !pt.lockedSingle) {
+          pt.shape = currentShape;
+          pt.dir = currentDir;
+          pt.size = currentSize;
+        }
+      }
+
+      function syncSizeUI(size) {
+        currentSize = size;
+        sizeSlider.value = size;
+        sizeVal.textContent = size + "px";
+      }
+
+      function addPoint(x, y) {
+        const id = Date.now() + Math.floor(Math.random() * 1000);
+        points.push({
+          id: id,
+          nodes: [{ x: x, y: y }],
+          shape: currentShape,
+          dir: currentDir,
+          size: currentSize,
+          lockedSingle: false,
+          saved: false
+        });
+        selectedId = id;
+        renderSavedList();
+        statusText.textContent = "नया पॉइंट जोड़ा गया! ड्रैग करके मूव करें या और पॉइंट जोड़ें।";
+      }
+
+      function getCanvasCoords(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      }
+
+      // Find point under a canvas coordinate (checks all nodes in merged groups)
+      function findPointAt(x, y) {
+        for (let i = points.length - 1; i >= 0; i--) {
+          const pt = points[i];
+          const hit = pt.nodes.some(
+            (n) => Math.hypot(n.x - x, n.y - y) <= Math.max(pt.size * 0.8, 25)
+          );
+          if (hit) return pt;
+        }
+        return null;
+      }
+
+      // ---------------------------------------------------------------
+      // POINTER / GESTURE STATE
+      // ---------------------------------------------------------------
+      const activePointers = new Map();
+      let multiTouchActive = false;
+
+      // Tap state
+      let tapDownX = 0, tapDownY = 0, tapDownTime = 0;
+      let tapMoved = false;
+
+      // Drag state (single finger on a point)
+      let dragPointId = null;
+      let dragStartX = 0, dragStartY = 0;
+      let dragOrigNodes = null; // deep copy of node positions
+      let dragging = false;
+
+      // Pinch state
+      let pinchStartDist = 0;
+      let pinchStartSize = 0;
+      let pinchPointId = null;
+
+      function getPointerDistance() {
+        const pts = Array.from(activePointers.values());
+        if (pts.length < 2) return 0;
+        return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      }
+
+      canvas.addEventListener("pointerdown", function (e) {
+        canvas.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (activePointers.size === 1) {
+          // Reset tap/drag state
+          tapDownX = e.clientX;
+          tapDownY = e.clientY;
+          tapDownTime = performance.now();
+          tapMoved = false;
+          multiTouchActive = false;
+
+          const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+          const hit = findPointAt(x, y);
+
+          if (hit) {
+            // Select + begin potential drag
+            selectedId = hit.id;
+            syncSizeUI(Math.round(hit.size));
+            dragPointId = hit.id;
+            dragStartX = x;
+            dragStartY = y;
+            dragOrigNodes = hit.nodes.map((n) => ({ x: n.x, y: n.y }));
+            dragging = false;
+            renderSavedList();
+          } else {
+            dragPointId = null;
+            dragOrigNodes = null;
+            dragging = false;
+          }
+        } else if (activePointers.size === 2) {
+          // Pinch begins — cancel any drag
+          multiTouchActive = true;
+          dragging = false;
+          dragPointId = null;
+          dragOrigNodes = null;
+
+          pinchStartDist = getPointerDistance();
+          const pts = Array.from(activePointers.values());
+          const midX = (pts[0].x + pts[1].x) / 2;
+          const midY = (pts[0].y + pts[1].y) / 2;
+
+          let target = points.find((p) => p.id === selectedId);
+          if (!target) {
+            const { x, y } = getCanvasCoords(midX, midY);
+            target = findPointAt(x, y);
+            if (target) selectedId = target.id;
+          }
+          if (target) {
+            pinchPointId = target.id;
+            pinchStartSize = target.size;
+            statusText.textContent = `✌️ पिंच करके साइज़ बदलें (${Math.round(target.size)}px)`;
+          } else {
+            pinchPointId = null;
+            statusText.textContent = "पहले एक पॉइंट सिलेक्ट करें, फिर पिंच करें।";
+          }
+        }
+      });
+
+      canvas.addEventListener("pointermove", function (e) {
+        if (!activePointers.has(e.pointerId)) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        // PINCH
+        if (activePointers.size === 2 && multiTouchActive && pinchPointId !== null) {
+          const newDist = getPointerDistance();
+          if (pinchStartDist > 0) {
+            const ratio = newDist / pinchStartDist;
+            let newSize = Math.round(pinchStartSize * ratio);
+            newSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newSize));
+
+            const pt = points.find((p) => p.id === pinchPointId);
+            if (pt && !pt.lockedSingle) {
+              pt.size = newSize;
+              syncSizeUI(newSize);
+              renderSavedList();
+            }
+          }
+          return;
+        }
+
+        // DRAG
+        if (activePointers.size === 1 && dragPointId !== null && dragOrigNodes) {
+          const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+          const dx = x - dragStartX;
+          const dy = y - dragStartY;
+
+          if (!dragging && Math.hypot(dx, dy) > 3) {
+            dragging = true;
+            tapMoved = true;
+          }
+
+          if (dragging) {
+            const pt = points.find((p) => p.id === dragPointId);
+            if (pt) {
+              pt.nodes.forEach((n, i) => {
+                n.x = dragOrigNodes[i].x + dx;
+                n.y = dragOrigNodes[i].y + dy;
+              });
+            }
+          }
+        }
+      });
+
+      function endPointer(e) {
+        // Was this a clean tap on empty canvas?
+        if (activePointers.size === 1 && !multiTouchActive) {
+          const dt = performance.now() - tapDownTime;
+          const dist = Math.hypot(e.clientX - tapDownX, e.clientY - tapDownY);
+          const isTap = dt < 600 && dist < 10 && !tapMoved;
+
+          if (isTap && dragPointId === null) {
+            // Tap on empty → create new point (only in add mode OR always? we allow always for ease)
+            const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+            if (x >= 0 && y >= 0 && x <= canvas.width && y <= canvas.height) {
+              addPoint(x, y);
+            }
+          } else if (dragging && dragPointId !== null) {
+            const pt = points.find((p) => p.id === dragPointId);
+            if (pt) {
+              statusText.textContent = `📍 पॉइंट मूव हो गया (${pt.nodes.length} नोड)।`;
+            }
+          }
+        }
+
+        activePointers.delete(e.pointerId);
+
+        if (activePointers.size < 2) {
+          if (pinchPointId !== null) {
+            const pt = points.find((p) => p.id === pinchPointId);
+            if (pt) statusText.textContent = `✅ साइज़ सेट: ${Math.round(pt.size)}px`;
+          }
+          pinchPointId = null;
+          pinchStartDist = 0;
+        }
+
+        if (activePointers.size === 0) {
+          multiTouchActive = false;
+          dragging = false;
+          dragPointId = null;
+          dragOrigNodes = null;
+          tapMoved = false;
+        }
+      }
+
+      canvas.addEventListener("pointerup", function (e) {
+        if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
+          canvas.releasePointerCapture(e.pointerId);
+        }
+        endPointer(e);
+      });
+
+      canvas.addEventListener("pointercancel", function (e) {
+        endPointer(e);
+        activePointers.clear();
+        multiTouchActive = false;
+        dragging = false;
+        dragPointId = null;
+        dragOrigNodes = null;
+        pinchPointId = null;
+      });
+
+      // Desktop: ctrl+wheel resize
+      canvas.addEventListener("wheel", function (e) {
+        if (!e.ctrlKey) return;
+        if (!selectedId) return;
+        e.preventDefault();
+        const pt = points.find((p) => p.id === selectedId);
+        if (!pt || pt.lockedSingle) return;
+        const delta = e.deltaY > 0 ? -4 : 4;
+        let newSize = Math.round(pt.size + delta);
+        newSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newSize));
+        pt.size = newSize;
+        syncSizeUI(newSize);
+        renderSavedList();
+      }, { passive: false });
+
+      // ---------------------------------------------------------------
+      // Add Mode toggle
+      // ---------------------------------------------------------------
+      btnAddMode.addEventListener("click", function () {
+        mode = mode === "add" ? "move" : "add";
+        if (mode === "add") {
+          btnAddMode.textContent = "✋ मूव मोड (ड्रैग करें)";
+          btnAddMode.style.background = "#8b5cf6";
+          statusText.textContent = "➕ ऐड मोड: खाली जगह टच करें तो नया पॉइंट बनेगा।";
+        } else {
+          btnAddMode.textContent = "➕ नया मोशन पॉइंट जोड़ें (Move Mode)";
+          btnAddMode.style.background = "#f59e0b";
+          statusText.textContent = "✋ मूव मोड: पॉइंट को ड्रैग करके कहीं भी ले जाएँ।";
+        }
+      });
+
+      // ---------------------------------------------------------------
+      // Save / Merge / Toggle / Clear
+      // ---------------------------------------------------------------
+      btnSingleSave.addEventListener("click", function () {
+        if (points.length === 0) {
+          statusText.textContent = "पहले फोटो पर टच करके एक मोशन पॉइंट बनाएँ!";
+          return;
+        }
+        const target = points.find((p) => p.id === selectedId) || points[points.length - 1];
+        target.lockedSingle = true;
+        target.saved = true;
+        selectedId = target.id;
+        renderSavedList();
+        statusText.textContent = "✅ सिंगल मोशन अलग से सेव हो गया (मर्ज नहीं होगा)!";
+      });
+
+      // ---------------------------------------------------------------
+      // MULTI-MOTION MERGE: group nearby points (including their nodes)
+      // into a single motion group that moves as one.
+      // ---------------------------------------------------------------
+      btnMergeSave.addEventListener("click", function () {
+        if (points.length === 0) {
+          statusText.textContent = "मर्ज करने के लिए कम से कम एक पॉइंट बनाएँ!";
+          return;
+        }
+        const locked = points.filter((p) => p.lockedSingle);
+        const unlocked = points.filter((p) => !p.lockedSingle);
+        const merged = [];
+
+        unlocked.forEach((pt) => {
+          pt.saved = true;
+          let joined = false;
+          for (let m of merged) {
+            // Merge if any node of pt is close to any node of m
+            const isNear = m.nodes.some((mn) =>
+              pt.nodes.some(
+                (pn) => Math.hypot(mn.x - pn.x, mn.y - pn.y) <= (m.size + pt.size) * 1.15
+              )
+            );
+            if (isNear) {
+              m.nodes.push(...pt.nodes);
+              m.size = Math.max(m.size, pt.size);
+              joined = true;
+              break;
+            }
+          }
+          if (!joined) merged.push(pt);
+        });
+
+        points = [...locked, ...merged];
+        renderSavedList();
+
+        const groupCount = merged.filter((m) => m.nodes.length > 1).length;
+        const totalNodes = merged.reduce((s, m) => s + m.nodes.length, 0);
+        statusText.textContent = `🔗 मर्ज पूरा! ${groupCount} मल्टी-मोशन ग्रुप, कुल ${totalNodes} नोड्स एक साथ हिलेंगे।`;
+      });
+
+      btnToggleGuides.addEventListener("click", function () {
+        showGuides = !showGuides;
+        btnToggleGuides.textContent = showGuides ? "👁️ गाइड छुपाएँ" : "👁️ गाइड दिखाएँ";
+        pinchHint.classList.toggle("hidden", !showGuides);
+      });
+
+      btnClearAll.addEventListener("click", function () {
+        points = [];
+        selectedId = null;
+        renderSavedList();
+        statusText.textContent = "सभी मोशन पॉइंट्स हटा दिए गए।";
+      });
+
+      // ---------------------------------------------------------------
+      // Saved list
+      // ---------------------------------------------------------------
+      function renderSavedList() {
+        countText.textContent = points.length;
+        savedList.textContent = "";
+        if (points.length === 0) {
+          const empty = document.createElement("div");
+          empty.style.fontSize = "12px";
+          empty.style.color = "#6b7280";
+          empty.textContent = "अभी कोई पॉइंट नहीं है। फोटो पर टच करें।";
+          savedList.appendChild(empty);
+          return;
+        }
+        points.forEach((pt, idx) => {
+          const row = document.createElement("div");
+          row.className = "saved-item";
+          if (pt.id === selectedId) {
+            row.style.borderColor = "#2563eb";
+            row.style.background = "#eff6ff";
+          }
+          const label = pt.lockedSingle
+            ? `🔒 सिंगल मोशन #${idx + 1} (${Math.round(pt.size)}px)`
+            : pt.nodes.length > 1
+            ? `🔗 मर्ज्ड मोशन #${idx + 1} (${pt.nodes.length} नोड्स, ${Math.round(pt.size)}px)`
+            : `⚪ पॉइंट #${idx + 1} (${Math.round(pt.size)}px)`;
+
+          const span = document.createElement("span");
+          span.textContent = label;
+          span.style.cursor = "pointer";
+          span.addEventListener("click", function () {
+            selectedId = pt.id;
+            syncSizeUI(Math.round(pt.size));
+            renderSavedList();
+          });
+
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "del-small";
+          delBtn.textContent = "हटाएँ";
+          delBtn.addEventListener("click", function () {
+            points = points.filter((item) => item.id !== pt.id);
+            if (selectedId === pt.id) selectedId = null;
+            renderSavedList();
+          });
+
+          row.appendChild(span);
+          row.appendChild(delBtn);
+          savedList.appendChild(row);
+        });
+      }
+
+      // ---------------------------------------------------------------
+      // Animation loop
+      // ---------------------------------------------------------------
+      let startTime = performance.now();
+
+      function animate(now) {
+        if (baseImg.complete && baseImg.naturalWidth > 0 && canvas.width > 0) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+
+          const elapsedSec = (now - startTime) / 1000;
+          const masterWave = Math.sin((elapsedSec * Math.PI * 2) / cycleSeconds);
+
+          points.forEach((pt) => {
+            const amplitude = Math.max(6, pt.size * 0.24);
+            const dx = pt.dir === "leftright" ? masterWave * amplitude : 0;
+            const dy = pt.dir === "updown" ? masterWave * amplitude : 0;
+            const r = pt.size / 2;
+
+            ctx.save();
+            ctx.beginPath();
+            pt.nodes.forEach((n) => {
+              if (pt.shape === "round") {
+                ctx.moveTo(n.x + r, n.y);
+                ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+              } else {
+                ctx.rect(n.x - r, n.y - r, pt.size, pt.size);
+              }
+            });
+            ctx.clip();
+            ctx.drawImage(baseImg, dx, dy, canvas.width, canvas.height);
+            ctx.restore();
+
+            if (showGuides) {
+              ctx.save();
+              ctx.lineWidth = pt.id === selectedId ? 3 : 2;
+              ctx.strokeStyle = pt.lockedSingle
+                ? "#10b981"
+                : pt.id === selectedId
+                ? "#facc15"
+                : "rgba(255, 255, 255, 0.85)";
+              pt.nodes.forEach((n) => {
+                ctx.beginPath();
+                if (pt.shape === "round") {
+                  ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                } else {
+                  ctx.rect(n.x - r, n.y - r, pt.size, pt.size);
+                }
+                ctx.stroke();
+              });
+              ctx.restore();
+            }
+          });
+        }
+        requestAnimationFrame(animate);
+      }
+
+      createDefaultDemoImage();
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
