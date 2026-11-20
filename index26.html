@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>तामीर अली LED कंट्रोल प्रो — स्मूद स्पीड</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Segoe UI', 'Poppins', sans-serif;
+        background: #0b0b0b;
+        color: #fff;
+        text-align: center;
+        padding: 15px 12px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow-x: hidden;
+    }
+
+    h3 {
+        color: #ff6e2b;
+        font-size: 22px;
+        letter-spacing: 2px;
+        text-shadow: 0 0 15px #ff6e2b66;
+        margin-bottom: 14px;
+        border-bottom: 2px dashed #ff6e2b;
+        padding-bottom: 8px;
+        display: inline-block;
+    }
+
+    /* ===== LED स्क्रीन ===== */
+    .led-screen {
+        background: #050505;
+        border: 5px solid #2a2a2a;
+        height: 200px;
+        width: 100%;
+        max-width: 900px;
+        overflow: hidden;
+        position: relative;
+        border-radius: 18px;
+        box-shadow: 0 0 30px #ff5722, inset 0 0 25px #000;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+    }
+
+    .led-mesh {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(0,0,0,0.65) 1.5px, transparent 1.5px);
+        background-size: 5px 5px;
+        z-index: 4; pointer-events: none;
+    }
+
+    .led-screen.fullscreen-mode {
+        position: fixed; inset: 0;
+        width: 100vw; height: 100vh;
+        max-width: 100vw; border-radius: 0;
+        border: none; z-index: 9999; margin: 0;
+    }
+
+    .exit-fs-hint {
+        display: none; position: fixed;
+        top: 12px; right: 15px;
+        background: rgba(255,87,34,0.92);
+        color: #fff; padding: 7px 14px;
+        border-radius: 20px; font-size: 12px;
+        z-index: 10000; cursor: pointer; border: none;
+        font-weight: 600;
+    }
+    .led-screen.fullscreen-mode ~ .exit-fs-hint { display: block; }
+
+    /* ===== JS-नियंत्रित स्मूद ट्रैक ===== */
+    .marquee-track {
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        will-change: transform;
+        z-index: 2;
+        position: relative;
+        transform: translate3d(0,0,0); /* GPU acceleration */
+    }
+
+    #ledText {
+        white-space: nowrap;
+        font-size: 38px;
+        font-weight: 800;
+        padding: 0 24px;
+        color: #00FF00;
+        text-shadow: 0 0 14px currentColor, 0 0 28px currentColor;
+        letter-spacing: 2px;
+        font-family: 'Segoe UI', 'Poppins', sans-serif;
+        display: inline-block;
+        transition: font-size 0.25s ease;
+    }
+
+    @media (max-width: 600px) {
+        #ledText { font-size: 26px; padding: 0 14px; }
+        .led-screen { height: 160px; }
+    }
+
+    .address-tag {
+        position: absolute; bottom: 6px; right: 12px;
+        background: rgba(0,0,0,0.82); padding: 3px 12px;
+        border-radius: 30px; font-size: 11px; color: #ffb085;
+        border: 1px solid #ff6e2b55; pointer-events: none; z-index: 5;
+    }
+
+    /* ===== टेक्स्ट इफेक्ट्स ===== */
+    .eff-zoom { animation: fxZoom 1.2s ease-in-out infinite alternate; }
+    @keyframes fxZoom { 0% { transform: scale(0.82); } 100% { transform: scale(1.15); } }
+    .eff-wave { animation: fxWave 0.9s ease-in-out infinite alternate; }
+    @keyframes fxWave { 0% { transform: translateY(-12px); } 100% { transform: translateY(12px); } }
+    .eff-glow { animation: fxGlow 1.1s ease-in-out infinite alternate; }
+    @keyframes fxGlow { 0% { filter: brightness(0.75); } 100% { filter: brightness(1.65); } }
+    .eff-rainbow { animation: fxRainbow 2s linear infinite; }
+    @keyframes fxRainbow {
+        0% { color: #ff2a2a; } 25% { color: #ffff00; }
+        50% { color: #00ff00; } 75% { color: #00ffff; } 100% { color: #ff00ff; }
+    }
+    .eff-glitch { animation: fxGlitch 0.8s infinite; }
+    @keyframes fxGlitch {
+        0%, 100% { transform: translate(0); }
+        30% { transform: translate(-4px, 2px); }
+        60% { transform: translate(4px, -2px); }
+    }
+
+    /* ===== सेलिब्रेशन ===== */
+    .celebration-container {
+        position: absolute; inset: 0;
+        pointer-events: none; z-index: 6; overflow: hidden;
+    }
+    .particle {
+        position: absolute;
+        animation: fallDown 2.2s linear forwards;
+    }
+    @keyframes fallDown {
+        0% { transform: translateY(-20px) scale(0.7) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(190px) scale(1.2) rotate(360deg); opacity: 0; }
+    }
+
+    /* ===== एनिमेटेड सीन ===== */
+    .scene-layer {
+        position: absolute; inset: 0;
+        pointer-events: none; z-index: 3;
+        overflow: hidden;
+    }
+    .scene-emoji {
+        position: absolute;
+        font-size: 34px;
+        pointer-events: none;
+        z-index: 3;
+        animation: sceneFloat 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 6px currentColor);
+    }
+    @keyframes sceneFloat {
+        0%, 100% { transform: translateY(0) rotate(-6deg); }
+        50% { transform: translateY(-16px) rotate(6deg); }
+    }
+    .scene-rocket { animation: rocketFly 1.6s ease-out infinite; }
+    @keyframes rocketFly {
+        0% { transform: translateY(80px) rotate(-40deg); opacity: 1; }
+        100% { transform: translateY(-120px) rotate(-40deg); opacity: 0; }
+    }
+    .scene-firework { animation: fireworkBurst 1.2s ease-out infinite; }
+    @keyframes fireworkBurst {
+        0% { transform: scale(0.3); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
+    }
+    .scene-sparkle { animation: sparkleTwinkle 1s ease-in-out infinite; }
+    @keyframes sparkleTwinkle {
+        0%, 100% { opacity: 0.3; transform: scale(0.6); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ===== डेमो स्टेटस बार ===== */
+    .demo-bar {
+        max-width: 900px; width: 100%;
+        background: linear-gradient(90deg, #1a0d00, #2a1500, #1a0d00);
+        border: 1px solid #ff6e2b55;
+        border-radius: 14px;
+        padding: 10px 16px;
+        margin-bottom: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 12px;
+    }
+    .demo-badge {
+        background: #ff6e2b; color: #000;
+        padding: 4px 12px; border-radius: 20px;
+        font-weight: 800; font-size: 11px;
+        letter-spacing: 1px;
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 #ff6e2b88; }
+        50% { box-shadow: 0 0 0 8px #ff6e2b00; }
+    }
+    .demo-info { color: #ffb085; font-weight: 600; }
+    .demo-info strong { color: #fff; }
+
+    /* ===== हार्डवेयर ===== */
+    .hw-box {
+        background: linear-gradient(145deg, #16222a, #1a2933);
+        border: 1px solid #00ffff55;
+        border-radius: 18px;
+        padding: 14px 16px;
+        max-width: 750px; width: 100%;
+        margin-bottom: 14px; text-align: left;
+    }
+    .hw-header {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 8px;
+        gap: 8px; flex-wrap: wrap;
+    }
+    .hw-title { font-size: 15px; font-weight: 700; color: #00ffff; }
+    .hw-status {
+        font-size: 12px; padding: 4px 10px;
+        border-radius: 12px; background: #222; color: #ccc;
+    }
+    .hw-status.connected {
+        background: #004d26; color: #00ff88; border: 1px solid #00ff88;
+    }
+    .hw-controls { display: flex; gap: 8px; align-items: center; }
+    .hw-controls input {
+        margin: 0; padding: 10px 12px;
+        font-size: 14px; flex: 1;
+    }
+    .hw-toggle-btn {
+        padding: 10px 14px; border-radius: 12px;
+        border: none; background: #2c3e50;
+        color: #fff; font-weight: 700;
+        cursor: pointer; white-space: nowrap;
+    }
+    .hw-toggle-btn.active { background: #00c853; color: #000; }
+
+    /* ===== पैनल ===== */
+    .panel {
+        background: #141414;
+        padding: 20px;
+        border-radius: 24px;
+        border: 1px solid #2c2c2c;
+        max-width: 750px; width: 100%;
+        text-align: left;
+        box-shadow: 0 8px 30px rgba(255,87,34,0.15);
+    }
+
+    .label-text {
+        font-size: 13px; color: #ff6e2b; font-weight: 700;
+        margin: 14px 0 6px 0; display: block; letter-spacing: 0.8px;
+    }
+
+    input, textarea, select {
+        width: 100%; padding: 13px 15px;
+        margin-bottom: 8px; border-radius: 14px;
+        border: 1px solid #2e2e2e;
+        background: #1f1f1f; color: #f0f0f0;
+        font-size: 15px; outline: none;
+        font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #ff6e2b; }
+
+    .preset-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr);
+        gap: 8px; margin-bottom: 10px;
+    }
+    .preset-btn {
+        background: #222; border: 1px solid #383838;
+        color: #ffd54f; padding: 10px;
+        border-radius: 12px; font-size: 13px;
+        font-weight: 600; cursor: pointer;
+    }
+    .preset-btn:active { transform: scale(0.97); }
+
+    .color-grid {
+        display: grid; grid-template-columns: repeat(5, 1fr);
+        gap: 8px; margin: 8px 0;
+    }
+    .c-btn {
+        height: 46px; border: none; border-radius: 12px;
+        cursor: pointer; font-weight: 700; font-size: 13px;
+        box-shadow: 0 3px 0 #00000088;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .style-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 8px; margin: 8px 0;
+    }
+    .style-btn {
+        padding: 10px; border: none; border-radius: 10px;
+        background: #2a2a2a; color: #fff;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+        transition: 0.2s;
+    }
+    .style-btn.active {
+        background: #ff6e2b; color: #000;
+        box-shadow: 0 0 16px #ff6e2b;
+    }
+
+    .scene-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin: 8px 0;
+    }
+    .scene-btn {
+        padding: 10px 4px;
+        border: 1px solid #444;
+        border-radius: 12px;
+        background: #1e1e1e;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: 0.2s;
+    }
+    .scene-btn .sc-emoji { font-size: 20px; }
+    .scene-btn.active {
+        background: #2a1a10;
+        border-color: #ff6e2b;
+        box-shadow: 0 0 12px #ff6e2b66;
+    }
+
+    .range-row {
+        display: flex; align-items: center;
+        gap: 12px; margin: 6px 0 14px 0;
+    }
+    .range-row input[type="range"] { flex: 1; margin: 0; }
+    .range-val {
+        font-size: 13px; color: #ffb085;
+        min-width: 56px; text-align: center;
+        background: #1e1e1e; padding: 5px 8px;
+        border-radius: 20px;
+    }
+
+    .action-btns {
+        display: flex; gap: 10px;
+        margin-top: 12px; flex-wrap: wrap;
+    }
+    .action-btns button {
+        flex: 1; padding: 13px;
+        border-radius: 16px; border: none;
+        font-weight: 800; font-size: 15px;
+        cursor: pointer; background: #2b2b2b;
+        color: #ffb085; border: 1px solid #ff6e2b44;
+        transition: 0.2s;
+    }
+    .action-btns button.primary {
+        background: #ff6e2b; color: #000;
+        border: none; box-shadow: 0 0 18px #ff6e2b88;
+    }
+    .action-btns button:active { transform: scale(0.97); }
+
+    .fs-btn {
+        background: #333; border: 1px solid #555;
+        color: #fff; padding: 8px 16px;
+        border-radius: 30px; font-size: 13px;
+        font-weight: 700; cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    .hint { font-size: 11px; color: #777; margin-top: 6px; }
+
+    .emoji-quick {
+        display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0;
+    }
+    .emoji-quick button {
+        background: #1e1e1e; border: 1px solid #333;
+        border-radius: 10px; font-size: 20px;
+        padding: 4px 8px; cursor: pointer;
+    }
+    .emoji-quick button:active { transform: scale(0.92); }
+
+    .demo-controls {
+        display: flex; gap: 8px; margin: 10px 0;
+        flex-wrap: wrap;
+    }
+    .demo-controls button {
+        flex: 1; min-width: 120px;
+        padding: 12px;
+        border-radius: 14px;
+        border: none;
+        font-weight: 800;
+        font-size: 14px;
+        cursor: pointer;
+        background: #1e3a5f;
+        color: #00ffff;
+        border: 1px solid #00ffff55;
+        transition: 0.2s;
+    }
+    .demo-controls button.active {
+        background: #00c853;
+        color: #000;
+        border-color: #00c853;
+        box-shadow: 0 0 16px #00c85388;
+    }
+    .demo-controls button:active { transform: scale(0.97); }
+
+    /* ===== नया: स्पीड प्रीसेट बटन ===== */
+    .speed-presets {
+        display: flex;
+        gap: 6px;
+        margin: 6px 0 10px 0;
+        flex-wrap: wrap;
+    }
+    .speed-preset-btn {
+        flex: 1;
+        min-width: 60px;
+        padding: 8px 6px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        background: #1e1e1e;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+    .speed-preset-btn.active {
+        background: #ff6e2b;
+        color: #000;
+        border-color: #ff6e2b;
+        box-shadow: 0 0 12px #ff6e2b88;
+    }
+    .speed-preset-btn:active { transform: scale(0.95); }
+
+    /* ===== स्मूदनेस इंडिकेटर ===== */
+    .smooth-badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        background: #00c85322;
+        color: #00ff88;
+        border: 1px solid #00c85355;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+</style>
+</head>
+<body>
+<h3>तामीर अली LED कंट्रोल प्रो — स्मूद स्पीड <span class="smooth-badge">60 FPS</span></h3>
+
+<!-- LED स्क्रीन -->
+<div class="led-screen" id="ledScreen">
+    <div class="led-mesh"></div>
+    <div class="scene-layer" id="sceneLayer"></div>
+    <div class="marquee-track" id="marqueeTrack">
+        <span id="ledText">तामीर अली</span>
+    </div>
+    <div class="celebration-container" id="celebrationContainer"></div>
+    <div class="address-tag" id="addressTag">LED MATRIX PRO+</div>
+</div>
+<button class="exit-fs-hint" id="exitFsHint">✕ बाहर निकलें</button>
+
+<!-- डेमो स्टेटस बार -->
+<div class="demo-bar">
+    <span class="demo-badge">● LIVE DEMO</span>
+    <span class="demo-info">वर्तमान: <strong id="currentFeature">स्क्रॉल टेक्स्ट</strong></span>
+    <span class="demo-info">अगला बदलाव: <strong id="countdown">6</strong>s</span>
+</div>
+
+<button class="fs-btn" id="fsBtn">⛶ फुलस्क्रीन</button>
+
+<!-- हार्डवेयर कनेक्शन -->
+<div class="hw-box">
+    <div class="hw-header">
+        <span class="hw-title">🔌 हार्डवेयर कनेक्शन</span>
+        <span class="hw-status" id="hwStatus">डिस्कनेक्टेड</span>
+    </div>
+    <div class="hw-controls">
+        <input type="text" id="deviceId" placeholder="डिवाइस ID / COM पोर्ट" value="LED-01">
+        <button class="hw-toggle-btn" id="connectBtn">कनेक्ट</button>
+    </div>
+    <div class="hint">* वास्तविक हार्डवेयर के लिए वेब ब्लूटूथ / सीरियल API आवश्यक</div>
+</div>
+
+<!-- कंट्रोल पैनल -->
+<div class="panel">
+
+    <!-- डेमो मोड कंट्रोल -->
+    <label class="label-text">🎬 डेमो शोकेस मोड</label>
+    <div class="demo-controls">
+        <button id="demoStartBtn" class="active">▶ डेमो शुरू</button>
+        <button id="demoStopBtn">⏹ रोकें</button>
+    </div>
+
+    <!-- ===== नया: स्पीड प्रीसेट ===== -->
+    <label class="label-text">🏎️ स्क्रॉल स्पीड (स्मूद)</label>
+    <div class="speed-presets" id="speedPresets">
+        <button class="speed-preset-btn" data-speed="0.5">🐢 धीमा 0.5x</button>
+        <button class="speed-preset-btn" data-speed="1">🚶 सामान्य 1x</button>
+        <button class="speed-preset-btn active" data-speed="2">🏃 तेज़ 2x</button>
+        <button class="speed-preset-btn" data-speed="4">⚡ बहुत तेज़ 4x</button>
+        <button class="speed-preset-btn" data-speed="8">🚀 रॉकेट 8x</button>
+    </div>
+
+    <div class="range-row">
+        <input type="range" id="speedRange" min="0.5" max="10" value="2" step="0.1">
+        <span class="range-val" id="speedVal">2.0x</span>
+    </div>
+
+    <!-- टेक्स्ट -->
+    <label class="label-text">✏️ टेक्स्ट</label>
+    <textarea id="textInput" rows="4">तामीर अली गाँव जसौली स्क पट्टी पोस्ट पहरुखी जिला सिवान संपर्क WhatsApp नंबर 8797221991 🙏 तामीर अली LED कंट्रोल प्रो में आपका स्वागत है 🙏 शादी 💒 बर्थडे 🎂 पटाखे 🎆 आतिशबाजी ✨ दिवाली 🪔 ईद 🌙 क्रिसमस 🎄 सभी अवसरों के लिए बेहतरीन LED डिस्प्ले उपलब्ध है ❤️ संपर्क करें 8797221991 ❤️ धन्यवाद 🙏</textarea>
+
+    <!-- क्विक इमोजी -->
+    <label class="label-text">😊 क्विक इमोजी</label>
+    <div class="emoji-quick" id="emojiQuick">
+        <button data-emoji="❤️">❤️</button>
+        <button data-emoji="🎉">🎉</button>
+        <button data-emoji="🌸">🌸</button>
+        <button data-emoji="⭐">⭐</button>
+        <button data-emoji="🎂">🎂</button>
+        <button data-emoji="🚀">🚀</button>
+        <button data-emoji="💒">💒</button>
+        <button data-emoji="🪔">🪔</button>
+        <button data-emoji="🌙">🌙</button>
+        <button data-emoji="✨">✨</button>
+    </div>
+
+    <!-- टेक्स्ट साइज़ -->
+    <label class="label-text">🔤 टेक्स्ट साइज़</label>
+    <div class="range-row">
+        <input type="range" id="sizeRange" min="16" max="100" value="38" step="2">
+        <span class="range-val" id="sizeVal">38px</span>
+    </div>
+
+    <!-- प्रीसेट -->
+    <label class="label-text">📋 प्रीसेट</label>
+    <div class="preset-grid">
+        <button class="preset-btn" data-preset="तामीर अली गाँव जसौली स्क पट्टी पोस्ट पहरुखी जिला सिवान संपर्क WhatsApp नंबर 8797221991">📞 पूरा पता + नंबर</button>
+        <button class="preset-btn" data-preset="🙏 तामीर अली LED कंट्रोल प्रो में आपका स्वागत है 🙏">🙏 स्वागत</button>
+    </div>
+
+    <!-- रंग -->
+    <label class="label-text">🎨 टेक्स्ट रंग</label>
+    <div class="color-grid">
+        <button class="c-btn" style="background:#00FF00;color:#000;" data-color="#00FF00">हरा</button>
+        <button class="c-btn" style="background:#FF0000;color:#fff;" data-color="#FF0000">लाल</button>
+        <button class="c-btn" style="background:#00FFFF;color:#000;" data-color="#00FFFF">सियान</button>
+        <button class="c-btn" style="background:#FFD700;color:#000;" data-color="#FFD700">सुनहरा</button>
+        <button class="c-btn" style="background:#FF00FF;color:#fff;" data-color="#FF00FF">मैजेंटा</button>
+        <button class="c-btn" style="background:#FFA500;color:#000;" data-color="#FFA500">नारंगी</button>
+        <button class="c-btn" style="background:#8000FF;color:#fff;" data-color="#8000FF">बैंगनी</button>
+        <button class="c-btn" style="background:#FFFFFF;color:#000;" data-color="#FFFFFF">सफ़ेद</button>
+        <button class="c-btn" style="background:#00BFFF;color:#000;" data-color="#00BFFF">आसमानी</button>
+        <button class="c-btn" style="background:#FF69B4;color:#000;" data-color="#FF69B4">गुलाबी</button>
+    </div>
+
+    <!-- इफेक्ट -->
+    <label class="label-text">💫 टेक्स्ट इफेक्ट</label>
+    <div class="style-grid">
+        <button class="style-btn active" data-effect="none">सामान्य</button>
+        <button class="style-btn" data-effect="eff-zoom">ज़ूम</button>
+        <button class="style-btn" data-effect="eff-wave">वेव</button>
+        <button class="style-btn" data-effect="eff-glow">ग्लो</button>
+        <button class="style-btn" data-effect="eff-rainbow">रेनबो</button>
+        <button class="style-btn" data-effect="eff-glitch">ग्लिच</button>
+    </div>
+
+    <!-- दिशा -->
+    <label class="label-text">➡️ स्क्रॉल दिशा</label>
+    <div class="style-grid">
+        <button class="style-btn active" data-direction="left">← बाएं</button>
+        <button class="style-btn" data-direction="right">दाएं →</button>
+        <button class="style-btn" data-direction="up">↑ ऊपर</button>
+        <button class="style-btn" data-direction="down">↓ नीचे</button>
+        <button class="style-btn" data-direction="none">⏸ स्थिर</button>
+    </div>
+
+    <!-- एनिमेटेड सीन -->
+    <label class="label-text">🎬 एनिमेटेड सीन</label>
+    <div class="scene-grid" id="sceneGrid">
+        <button class="scene-btn active" data-scene="none"><span class="sc-emoji">🚫</span>कोई नहीं</button>
+        <button class="scene-btn" data-scene="wedding"><span class="sc-emoji">💒</span>शादी</button>
+        <button class="scene-btn" data-scene="birthday"><span class="sc-emoji">🎂</span>बर्थडे</button>
+        <button class="scene-btn" data-scene="fireworks"><span class="sc-emoji">🎆</span>पटाखे</button>
+        <button class="scene-btn" data-scene="sparkle"><span class="sc-emoji">✨</span>आतिशबाजी</button>
+        <button class="scene-btn" data-scene="diwali"><span class="sc-emoji">🪔</span>दिवाली</button>
+        <button class="scene-btn" data-scene="eid"><span class="sc-emoji">🌙</span>ईद</button>
+        <button class="scene-btn" data-scene="christmas"><span class="sc-emoji">🎄</span>क्रिसमस</button>
+    </div>
+
+    <!-- सेलिब्रेशन -->
+    <label class="label-text">🎉 एक बार का सेलिब्रेशन</label>
+    <div class="grid-2">
+        <button class="preset-btn" id="confettiBtn" style="width:100%; padding:13px;">🎊 कॉन्फ़ेटी</button>
+        <button class="preset-btn" id="sparkleBtn" style="width:100%; padding:13px;">✨ स्पार्कल</button>
+    </div>
+
+    <!-- एक्शन -->
+    <div class="action-btns">
+        <button class="primary" id="applyBtn">✅ अप्लाई</button>
+        <button id="pauseBtn">⏸ पॉज़</button>
+        <button id="resetBtn">🔄 रीसेट</button>
+    </div>
+
+    <div class="hint" style="margin-top:12px; text-align:center; color:#555;">
+        स्मूद 60FPS स्क्रॉल • तामीर अली प्रो+
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ========== DOM ==========
+    const ledScreen = document.getElementById('ledScreen');
+    const marqueeTrack = document.getElementById('marqueeTrack');
+    const ledText = document.getElementById('ledText');
+    const textInput = document.getElementById('textInput');
+    const speedRange = document.getElementById('speedRange');
+    const speedVal = document.getElementById('speedVal');
+    const sizeRange = document.getElementById('sizeRange');
+    const sizeVal = document.getElementById('sizeVal');
+    const applyBtn = document.getElementById('applyBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const fsBtn = document.getElementById('fsBtn');
+    const exitFsHint = document.getElementById('exitFsHint');
+    const celebrationContainer = document.getElementById('celebrationContainer');
+    const sceneLayer = document.getElementById('sceneLayer');
+    const confettiBtn = document.getElementById('confettiBtn');
+    const sparkleBtn = document.getElementById('sparkleBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    const hwStatus = document.getElementById('hwStatus');
+    const addressTag = document.getElementById('addressTag');
+    const speedPresets = document.getElementById('speedPresets');
+    const demoStartBtn = document.getElementById('demoStartBtn');
+    const demoStopBtn = document.getElementById('demoStopBtn');
+    const currentFeatureEl = document.getElementById('currentFeature');
+    const countdownEl = document.getElementById('countdown');
+
+    // ========== State ==========
+    let currentEffect = 'none';
+    let currentDirection = 'left';
+    let currentScene = 'none';
+    let isPaused = false;
+    let fontSize = 38;
+    let currentColor = '#00FF00';
+    let hwConnected = false;
+
+    // ===== Smooth scroll engine =====
+    let scrollPos = 0;           // current position (px)
+    let speedMultiplier = 2;     // 0.5x to 10x
+    const BASE_PX_PER_SEC = 100; // base speed at 1x (pixels per second)
+    let lastTimestamp = 0;
+    let rafId = null;
+    let trackWidth = 0;
+    let screenWidth = 0;
+
+    // Demo
+    let demoRunning = true;
+    let demoInterval = null;
+    let countdownInterval = null;
+    let demoStep = 0;
+    let countdownValue = 6;
+
+    const CUSTOMER_TEXT = "तामीर अली गाँव जसौली स्क पट्टी पोस्ट पहरुखी जिला सिवान संपर्क WhatsApp नंबर 8797221991 🙏 तामीर अली LED कंट्रोल प्रो में आपका स्वागत है 🙏 शादी 💒 बर्थडे 🎂 पटाखे 🎆 आतिशबाजी ✨ दिवाली 🪔 ईद 🌙 क्रिसमस 🎄 सभी अवसरों के लिए बेहतरीन LED डिस्प्ले उपलब्ध है ❤️ संपर्क करें 8797221991 ❤️ धन्यवाद 🙏 तामीर अली LED कंट्रोल प्रो आपके हर खास पल को रोशन बनाएं 💡 शादी समारोह में दूल्हा दुल्हन जयमाला के लिए विशेष LED डिस्प्ले 💒 बर्थडे पार्टी में केक मोमबत्ती गुब्बारों के साथ 🎂 पटाखे और आतिशबाजी से रोशन होगा आपका जश्न 🎆 दिवाली पर दीयों की रोशनी और LED की चमक 🪔 ईद पर चाँद और तारों से सजी LED 🌙 क्रिसमस पर बर्फ और पेड़ की सजावट 🎄 हर त्योहार हर खुशी हर मौका — तामीर अली LED कंट्रोल प्रो के साथ ✨ हमारा लक्ष्य है आपकी खुशियों में रोशनी जोड़ना ❤️ बेहतरीन क्वालिटी सस्ते दाम में उपलब्ध है 💰 होम डेकोरेशन दुकान शोरूम सभी जगह के लिए उपयुक्त 🏪 शादी का कार्ड बर्थडे का न्योता सभी कुछ LED पर दिखाएं 📩 अपने गाँव शहर इलाके में सबसे अलग और बेहतरीन LED डिस्प्ले पाएं केवल तामीर अली LED कंट्रोल प्रो से 🏆 WhatsApp करें 8797221991 📱 अभी ऑर्डर करें और पाएं विशेष छूट 🎁 सीमित समय का ऑफर 🕐 तामीर अली गाँव जसौली स्क पट्टी पोस्ट पहरुखी जिला सिवान संपर्क WhatsApp नंबर 8797221991 🙏 आपका अपना तामीर अली 🙏 धन्यवाद ❤️";
+
+    const DEMO_STEPS = [
+        { name: '🌈 रेनबो इफेक्ट',     effect: 'eff-rainbow', color: '#FFD700', direction: 'left',  size: 42, scene: 'none',      speed: 2 },
+        { name: '💒 शादी सीन',          effect: 'eff-glow',    color: '#FF69B4', direction: 'left',  size: 40, scene: 'wedding',   speed: 1.5 },
+        { name: '🎂 बर्थडे सीन',        effect: 'eff-zoom',    color: '#FFA500', direction: 'right', size: 44, scene: 'birthday',  speed: 2.5 },
+        { name: '🎆 पटाखे सीन',         effect: 'eff-glitch',  color: '#FF0000', direction: 'left',  size: 38, scene: 'fireworks', speed: 3 },
+        { name: '✨ आतिशबाजी सीन',      effect: 'eff-wave',    color: '#00FFFF', direction: 'left',  size: 40, scene: 'sparkle',   speed: 2 },
+        { name: '🪔 दिवाली सीन',        effect: 'eff-glow',    color: '#FFD700', direction: 'up',    size: 36, scene: 'diwali',    speed: 1.2 },
+        { name: '🌙 ईद सीन',            effect: 'eff-rainbow', color: '#FFFFFF', direction: 'left',  size: 42, scene: 'eid',       speed: 2 },
+        { name: '🎄 क्रिसमस सीन',       effect: 'eff-zoom',    color: '#00FF00', direction: 'down',  size: 40, scene: 'christmas', speed: 1.8 },
+        { name: '🎊 कॉन्फ़ेटी बर्स्ट',  effect: 'eff-glow',    color: '#FF00FF', direction: 'left',  size: 44, scene: 'none',      speed: 2, burst: 'confetti' },
+        { name: '⭐ बड़ा टेक्स्ट',       effect: 'none',        color: '#FFD700', direction: 'left',  size: 80, scene: 'none',      speed: 1.5 },
+        { name: '📞 WhatsApp नंबर',     effect: 'eff-glow',    color: '#25D366', direction: 'left',  size: 58, scene: 'sparkle',   speed: 1.8 },
+        { name: '🏠 पूरा पता',          effect: 'eff-rainbow', color: '#00BFFF', direction: 'right', size: 38, scene: 'none',      speed: 2.5 }
+    ];
+
+    // ========== Smooth scroll engine ==========
+    function measure() {
+        trackWidth = marqueeTrack.scrollWidth;
+        screenWidth = ledScreen.clientWidth;
+    }
+
+    function resetScrollPos() {
+        // Start from right edge for left scroll, left edge for right scroll
+        if (currentDirection === 'right') {
+            scrollPos = -trackWidth;
+        } else if (currentDirection === 'left') {
+            scrollPos = screenWidth;
+        } else {
+            scrollPos = 0;
+        }
+    }
+
+    function animateScroll(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const delta = Math.min(timestamp - lastTimestamp, 50); // cap to 50ms to avoid jumps
+        lastTimestamp = timestamp;
+
+        if (!isPaused && currentDirection !== 'none') {
+            const pxPerSec = BASE_PX_PER_SEC * speedMultiplier;
+            const move = (pxPerSec * delta) / 1000;
+
+            if (currentDirection === 'left') {
+                scrollPos -= move;
+                if (scrollPos + trackWidth < 0) scrollPos = screenWidth;
+            } else if (currentDirection === 'right') {
+                scrollPos += move;
+                if (scrollPos > screenWidth) scrollPos = -trackWidth;
+            } else if (currentDirection === 'up') {
+                scrollPos -= move * 1.2;
+                if (scrollPos + trackWidth < 0) scrollPos = screenWidth;
+            } else if (currentDirection === 'down') {
+                scrollPos += move * 1.2;
+                if (scrollPos > screenWidth) scrollPos = -trackWidth;
+            }
+
+            marqueeTrack.style.transform = `translate3d(${scrollPos}px, 0, 0)`;
+        } else {
+            // Update position even when paused so text stays
+            marqueeTrack.style.transform = `translate3d(${scrollPos}px, 0, 0)`;
+        }
+
+        rafId = requestAnimationFrame(animateScroll);
+    }
+
+    function startScrollEngine() {
+        if (rafId) cancelAnimationFrame(rafId);
+        lastTimestamp = 0;
+        measure();
+        resetScrollPos();
+        rafId = requestAnimationFrame(animateScroll);
+    }
+
+    function stopScrollEngine() {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    // ========== Apply color / text / effect ==========
+    function applyColor() {
+        ledText.style.color = currentColor;
+        ledText.style.textShadow = `0 0 14px ${currentColor}, 0 0 28px ${currentColor}`;
+    }
+
+    function updateText() {
+        ledText.textContent = textInput.value.trim() || 'तामीर अली';
+        measure();
+        resetScrollPos();
+    }
+
+    // ========== Scene ==========
+    let sceneInterval = null;
+    function clearScene() {
+        sceneLayer.innerHTML = '';
+        if (sceneInterval) { clearInterval(sceneInterval); sceneInterval = null; }
+    }
+
+    function addSceneEmoji(emoji, styleClass) {
+        const el = document.createElement('div');
+        el.className = 'scene-emoji ' + (styleClass || '');
+        el.textContent = emoji;
+        el.style.left = (Math.random() * 85 + 5) + '%';
+        el.style.top = (Math.random() * 70 + 10) + '%';
+        el.style.animationDelay = (Math.random() * 2) + 's';
+        el.style.fontSize = (24 + Math.random() * 24) + 'px';
+        sceneLayer.appendChild(el);
+    }
+
+    function buildScene(scene) {
+        clearScene();
+        if (scene === 'none') return;
+        const sceneConfig = {
+            wedding:    { emojis: ['💒','🤵','👰','💐','🌸','❤️','💍','🎊'], count: 10 },
+            birthday:   { emojis: ['🎂','🎈','🎁','🥳','🍰','🎉','🎊','✨'], count: 10 },
+            fireworks:  { emojis: ['🚀','💥','🎆','🎇','💣','🧨'], special: 'rocket', count: 12 },
+            sparkle:    { emojis: ['✨','⭐','💫','🌟','⚡'], special: 'sparkle', count: 14 },
+            diwali:     { emojis: ['🪔','✨','🎆','🌟','💥'], count: 10 },
+            eid:        { emojis: ['🌙','⭐','🕌','✨','🌟'], count: 10 },
+            christmas:  { emojis: ['🎄','❄️','🎅','🎁','⛄','✨'], count: 11 }
+        };
+        const cfg = sceneConfig[scene];
+        if (!cfg) return;
+
+        function spawn() {
+            for (let i = 0; i < cfg.count; i++) {
+                const emoji = cfg.emojis[Math.floor(Math.random() * cfg.emojis.length)];
+                if (cfg.special === 'rocket') addSceneEmoji(emoji, 'scene-rocket');
+                else if (cfg.special === 'sparkle') addSceneEmoji(emoji, 'scene-sparkle');
+                else addSceneEmoji(emoji, '');
+            }
+        }
+        spawn();
+        if (cfg.special) {
+            sceneInterval = setInterval(() => { clearScene(); spawn(); }, 2500);
+        }
+    }
+
+    // ========== Confetti ==========
+    function createParticles(count, colors) {
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 10 + 5;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = (Math.random() * 100) + '%';
+            particle.style.top = '-20px';
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            const delay = Math.random() * 0.6;
+            const duration = 1.6 + Math.random() * 1.4;
+            particle.style.animation = `fallDown ${duration}s linear ${delay}s forwards`;
+            celebrationContainer.appendChild(particle);
+            setTimeout(() => { if (particle.parentNode) particle.remove(); }, (duration + delay) * 1000 + 200);
+        }
+    }
+
+    // ========== Apply all ==========
+    function applyAll() {
+        updateText();
+        applyColor();
+        ledText.style.fontSize = fontSize + 'px';
+        ledText.className = '';
+        if (currentEffect !== 'none') ledText.classList.add(currentEffect);
+        applyColor();
+        // Reset scroll for direction change
+        resetScrollPos();
+    }
+
+    // ========== Demo ==========
+    function applyDemoStep(idx) {
+        const step = DEMO_STEPS[idx];
+        currentEffect = step.effect;
+        currentColor = step.color;
+        currentDirection = step.direction;
+        fontSize = step.size;
+        currentScene = step.scene;
+        speedMultiplier = step.speed;
+
+        // Update UI
+        document.querySelectorAll('.style-btn[data-effect]').forEach(b => b.classList.remove('active'));
+        const ef = document.querySelector(`.style-btn[data-effect="${step.effect}"]`);
+        if (ef) ef.classList.add('active');
+
+        document.querySelectorAll('.style-btn[data-direction]').forEach(b => b.classList.remove('active'));
+        const dr = document.querySelector(`.style-btn[data-direction="${step.direction}"]`);
+        if (dr) dr.classList.add('active');
+
+        document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+        const sc = document.querySelector(`.scene-btn[data-scene="${step.scene}"]`);
+        if (sc) sc.classList.add('active');
+
+        sizeRange.value = step.size;
+        sizeVal.textContent = step.size + 'px';
+        speedRange.value = step.speed;
+        speedVal.textContent = step.speed.toFixed(1) + 'x';
+
+        // speed presets active state
+        document.querySelectorAll('.speed-preset-btn').forEach(b => b.classList.remove('active'));
+
+        ledText.className = '';
+        if (currentEffect !== 'none') ledText.classList.add(currentEffect);
+        ledText.style.fontSize = fontSize + 'px';
+        applyColor();
+        buildScene(currentScene);
+        resetScrollPos();
+
+        currentFeatureEl.textContent = step.name;
+        addressTag.textContent = step.name;
+
+        if (step.burst === 'confetti') {
+            createParticles(70, ['#ff2a2a','#ffd700','#00ff88','#00ccff','#ff00ff','#ff6e2b','#ffffff']);
+        }
+    }
+
+    function startDemo() {
+        if (demoRunning) return;
+        demoRunning = true;
+        demoStartBtn.classList.add('active');
+        demoStopBtn.classList.remove('active');
+        demoStep = 0;
+        applyDemoStep(demoStep);
+        countdownValue = 6;
+        countdownEl.textContent = countdownValue;
+
+        if (demoInterval) clearInterval(demoInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        demoInterval = setInterval(() => {
+            demoStep = (demoStep + 1) % DEMO_STEPS.length;
+            applyDemoStep(demoStep);
+            countdownValue = 6;
+            countdownEl.textContent = countdownValue;
+        }, 6000);
+
+        countdownInterval = setInterval(() => {
+            countdownValue--;
+            if (countdownValue < 0) countdownValue = 6;
+            countdownEl.textContent = countdownValue;
+        }, 1000);
+    }
+
+    function stopDemo() {
+        demoRunning = false;
+        demoStartBtn.classList.remove('active');
+        demoStopBtn.classList.add('active');
+        if (demoInterval) { clearInterval(demoInterval); demoInterval = null; }
+        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+        countdownEl.textContent = '—';
+        currentFeatureEl.textContent = 'मैन्युअल मोड';
+    }
+
+    // ========== Events ==========
+    textInput.addEventListener('input', updateText);
+
+    document.querySelectorAll('.preset-btn[data-preset]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            textInput.value = this.dataset.preset;
+            updateText();
+        });
+    });
+
+    document.querySelectorAll('#emojiQuick button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            textInput.value += ' ' + this.dataset.emoji;
+            updateText();
+        });
+    });
+
+    document.querySelectorAll('.c-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentColor = this.dataset.color;
+            applyColor();
+        });
+    });
+
+    document.querySelectorAll('.style-btn[data-effect]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.style-btn[data-effect]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentEffect = this.dataset.effect;
+            ledText.className = '';
+            if (currentEffect !== 'none') ledText.classList.add(currentEffect);
+            applyColor();
+        });
+    });
+
+    document.querySelectorAll('.style-btn[data-direction]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.style-btn[data-direction]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentDirection = this.dataset.direction;
+            resetScrollPos();
+        });
+    });
+
+    document.querySelectorAll('.scene-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentScene = this.dataset.scene;
+            buildScene(currentScene);
+        });
+    });
+
+    // Speed range
+    speedRange.addEventListener('input', function() {
+        speedMultiplier = parseFloat(this.value);
+        speedVal.textContent = speedMultiplier.toFixed(1) + 'x';
+        // deselect presets if custom
+        document.querySelectorAll('.speed-preset-btn').forEach(b => {
+            b.classList.toggle('active', parseFloat(b.dataset.speed) === speedMultiplier);
+        });
+    });
+
+    // Speed presets
+    document.querySelectorAll('.speed-preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.speed-preset-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            speedMultiplier = parseFloat(this.dataset.speed);
+            speedRange.value = speedMultiplier;
+            speedVal.textContent = speedMultiplier.toFixed(1) + 'x';
+        });
+    });
+
+    sizeRange.addEventListener('input', function() {
+        fontSize = parseInt(this.value);
+        sizeVal.textContent = fontSize + 'px';
+        ledText.style.fontSize = fontSize + 'px';
+        measure();
+    });
+
+    applyBtn.addEventListener('click', applyAll);
+
+    pauseBtn.addEventListener('click', function() {
+        isPaused = !isPaused;
+        this.textContent = isPaused ? '▶ रेज़्यूम' : '⏸ पॉज़';
+    });
+
+    resetBtn.addEventListener('click', function() {
+        stopDemo();
+        textInput.value = CUSTOMER_TEXT;
+        currentEffect = 'none';
+        currentDirection = 'left';
+        currentScene = 'none';
+        currentColor = '#00FF00';
+        speedMultiplier = 2;
+        fontSize = 38;
+        isPaused = false;
+        speedRange.value = 2;
+        speedVal.textContent = '2.0x';
+        sizeRange.value = 38;
+        sizeVal.textContent = '38px';
+
+        document.querySelectorAll('.style-btn[data-effect]').forEach(b => b.classList.remove('active'));
+        document.querySelector('.style-btn[data-effect="none"]').classList.add('active');
+        document.querySelectorAll('.style-btn[data-direction]').forEach(b => b.classList.remove('active'));
+        document.querySelector('.style-btn[data-direction="left"]').classList.add('active');
+        document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.scene-btn[data-scene="none"]').classList.add('active');
+        document.querySelectorAll('.speed-preset-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.speed-preset-btn[data-speed="2"]').classList.add('active');
+
+        ledText.className = '';
+        ledText.style.fontSize = '38px';
+        applyColor();
+        pauseBtn.textContent = '⏸ पॉज़';
+        celebrationContainer.innerHTML = '';
+        clearScene();
+        addressTag.textContent = 'LED MATRIX PRO+';
+        updateText();
+        startScrollEngine();
+    });
+
+    demoStartBtn.addEventListener('click', startDemo);
+    demoStopBtn.addEventListener('click', stopDemo);
+
+    fsBtn.addEventListener('click', () => {
+        ledScreen.classList.add('fullscreen-mode');
+        setTimeout(measure, 100);
+    });
+    exitFsHint.addEventListener('click', () => {
+        ledScreen.classList.remove('fullscreen-mode');
+        setTimeout(measure, 100);
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            ledScreen.classList.remove('fullscreen-mode');
+            setTimeout(measure, 100);
+        }
+    });
+
+    confettiBtn.addEventListener('click', () => {
+        createParticles(70, ['#ff2a2a','#ffd700','#00ff88','#00ccff','#ff00ff','#ff6e2b','#ffffff']);
+    });
+    sparkleBtn.addEventListener('click', () => {
+        createParticles(50, ['#ffffff','#ffff00','#ffd700','#00ffff','#ff69b4','#ff6e2b']);
+    });
+
+    connectBtn.addEventListener('click', function() {
+        hwConnected = !hwConnected;
+        if (hwConnected) {
+            hwStatus.textContent = 'कनेक्टेड ✓';
+            hwStatus.classList.add('connected');
+            this.textContent = 'डिस्कनेक्ट';
+            this.classList.add('active');
+        } else {
+            hwStatus.textContent = 'डिस्कनेक्टेड';
+            hwStatus.classList.remove('connected');
+            this.textContent = 'कनेक्ट';
+            this.classList.remove('active');
+        }
+    });
+
+    // Window resize → remeasure
+    window.addEventListener('resize', () => {
+        measure();
+    });
+
+    // ========== Init ==========
+    function init() {
+        textInput.value = CUSTOMER_TEXT;
+        ledText.textContent = CUSTOMER_TEXT;
+        applyColor();
+        ledText.style.fontSize = fontSize + 'px';
+        speedVal.textContent = '2.0x';
+        sizeVal.textContent = '38px';
+
+        // Wait for fonts/layout to settle
+        setTimeout(() => {
+            startScrollEngine();
+        }, 300);
+
+        // Auto start demo
+        setTimeout(() => {
+            startDemo();
+        }, 1200);
+    }
+    init();
+})();
+</script>
+</body>
+</html>
